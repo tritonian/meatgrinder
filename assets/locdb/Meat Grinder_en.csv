@@ -1,12 +1,12 @@
 ﻿ID,Pipeline,PipelineStage,Notes,TranslationNotes,Tags,Text
-1,,,Mod name.,,,Meat Grinder (working on fixing desync)
-2,,,Mod description.,,,The meat grinder requires a sacrifice. Will you be able to stay away from the chopping block? \nThe player with the fewest kills is eliminated every set amount of time. Smaller maps with FFA recommended. \n\nCredit to KillerPigeon for the idea and many thanks to w*pro*k (sorry your name caused publish issues like you talk about smh) and FoxDie for letting me copy their homework.
+1,,,Mod name.,,,Meat Grinder
+2,,,Mod description.,,,The meat grinder requires a sacrifice. Will you be able to stay away from the chopping block? \nThe player with the fewest kills is eliminated every set amount of time. Smaller maps with FFA recommended. \n\nCredit to KillerPigeon for the idea and many thanks to W*pr*ck (sorry your name caused publish issues like you talk about smh) and FoxDie for letting me copy their homework.
 3,,,,,,Time Options
 4,,,,,,Time To First Elimination
 5,,,,,,Time Options
 6,,,,,,The amount of time between the beginning of the game and the first elimination.
 7,,,,,,Time Between Eliminations
-8,,,,,,Time between each subsequent elimination
+8,,,,,,Time between each subsequent elimination after the initial time.
 9,,,,,,Reset Points At Each Elimination
 10,,,,,,Reset every players kill points each time a player is eliminated.
 11,,,,,,Additional Point Reset Time
@@ -23,7 +23,7 @@
 22,,,,,,Wonder
 23,,,,,,heh yeah right
 24,,,,,,Double Starting Villagers
-25,,,,,,Starting Options
+25,,,,,,Other Options
 26,,,,,,1
 27,,,,,,2
 28,,,,,,3
@@ -46,3 +46,9 @@
 45,,,,,,60 seconds to next elim!
 46,,,,,,Time to next elimination:
 47,,,,,,%1PLAYERNAME%
+48,,,,,,Tie Handling
+49,,,,,,How 
+50,,,,,,Eliminate All Tied Players
+51,,,,,,How point ties are handled. More options coming soon?
+52,,,,,,Unit cost might be a bit buggy - like Joan only worth 50. 
+53,,,,,,Doubles starting villagers - OOTD only gets 5 while others get 6

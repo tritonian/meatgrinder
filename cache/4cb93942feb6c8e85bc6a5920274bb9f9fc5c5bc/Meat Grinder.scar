@@ -279,7 +279,7 @@ function MeatGrinder_SetupObjectiveUI()
 	for i,player in pairs(PLAYERS) do
 		-- get player team id, if it's 10002 they aren't on a team
 		local playerTeamID = Player_GetTeam(player.id)
-		if playerTeamID >= 100 then -- no team selected
+		if playerTeamID == 10002 then -- no team selected
 			playerTeamID = player.id.PlayerID
 		end
 		-- if this team isn't in team list, add it
@@ -458,8 +458,7 @@ function EventCallOnEntityKilled(context)
 	
 	-- unit value
 	if _mod.objectiveType == 1 then
-		-- could do a check here for outlier bugs like JD costing 50
-		-- do buildings work?
+		-- could do a check here for outlier bugs like JD costing 0
 		_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] + cost
 	end
 	
@@ -493,7 +492,7 @@ function MeatGrinder_ElimLowestKillsPlayer()
 	for i,player in pairs(PLAYERS) do
 		local aTeam = Player_GetTeam(player.id)
 		local idInList = aTeam
-		if aTeam >= 100 then -- no team selected
+		if aTeam == 10002 then -- no team selected
 			idInList = player.id.PlayerID
 		end
 		-- add up all kills by each team member into kills by team
@@ -520,7 +519,7 @@ function MeatGrinder_ElimLowestKillsPlayer()
 			if teamIsDeafeated == false then
 				losingTeams = {} -- clear losingTeams list because we found new lowest
 				minTeamKills = kills
-				losingTeams[teamName] = 1
+				table.insert(losingTeams, teamName)
 			end
 		elseif kills == minTeamKills then
 			-- repeat same checks above but just adding to list of losers
@@ -532,7 +531,7 @@ function MeatGrinder_ElimLowestKillsPlayer()
 			end
 			if teamIsDeafeated == false then
 				minTeamKills = kills
-				losingTeams[teamName] = 1
+				table.insert(losingTeams, teamName)
 			end
 		end
 	end

@@ -279,7 +279,7 @@ function MeatGrinder_SetupObjectiveUI()
 	for i,player in pairs(PLAYERS) do
 		-- get player team id, if it's 10002 they aren't on a team
 		local playerTeamID = Player_GetTeam(player.id)
-		if playerTeamID >= 100 then -- no team selected
+		if playerTeamID == 10002 then -- no team selected
 			playerTeamID = player.id.PlayerID
 		end
 		-- if this team isn't in team list, add it

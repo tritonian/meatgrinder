@@ -279,7 +279,7 @@ function MeatGrinder_SetupObjectiveUI()
 	for i,player in pairs(PLAYERS) do
 		-- get player team id, if it's 10002 they aren't on a team
 		local playerTeamID = Player_GetTeam(player.id)
-		if playerTeamID >= 100 then -- no team selected
+		if playerTeamID == 10002 then -- no team selected
 			playerTeamID = player.id.PlayerID
 		end
 		-- if this team isn't in team list, add it
@@ -458,8 +458,7 @@ function EventCallOnEntityKilled(context)
 	
 	-- unit value
 	if _mod.objectiveType == 1 then
-		-- could do a check here for outlier bugs like JD costing 50
-		-- do buildings work?
+		-- could do a check here for outlier bugs like JD costing 0
 		_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] + cost
 	end
 	
@@ -493,7 +492,7 @@ function MeatGrinder_ElimLowestKillsPlayer()
 	for i,player in pairs(PLAYERS) do
 		local aTeam = Player_GetTeam(player.id)
 		local idInList = aTeam
-		if aTeam >= 100 then -- no team selected
+		if aTeam == 10002 then -- no team selected
 			idInList = player.id.PlayerID
 		end
 		-- add up all kills by each team member into kills by team
@@ -506,9 +505,9 @@ function MeatGrinder_ElimLowestKillsPlayer()
 	
 	-- get team with least kills. Right now the last tied player checked should be eliminated.
 	local minTeamKills = math.huge
-	local losingTeams = {}
+	local losingTeam = nil
 	for teamName,kills in pairs(totalKillsByTeam) do 
-		if kills < minTeamKills  then
+		if kills <= minTeamKills  then
 			local teamIsDeafeated = true
 			-- check if team is already defeated because all players on team are defeated
 			for j,player in pairs(_mod.playerListByTeam[teamName]) do
@@ -518,34 +517,19 @@ function MeatGrinder_ElimLowestKillsPlayer()
 			end
 			-- if entire team is not defeated, this is new team with lowest kills
 			if teamIsDeafeated == false then
-				losingTeams = {} -- clear losingTeams list because we found new lowest
 				minTeamKills = kills
-				losingTeams[teamName] = 1
-			end
-		elseif kills == minTeamKills then
-			-- repeat same checks above but just adding to list of losers
-			local teamIsDeafeated = true
-			for j,player in pairs(_mod.playerListByTeam[teamName]) do
-				if Core_IsPlayerEliminated(player) == false then
-					teamIsDeafeated = false
-				end
-			end
-			if teamIsDeafeated == false then
-				minTeamKills = kills
-				losingTeams[teamName] = 1
+				-- could change losingTeam to a list so multiple can be eliminated??
+				losingTeam = teamName
 			end
 		end
 	end
 	
 	-- loop through all teams and eliminate team that is losingTeam
 	for team,pList in pairs(_mod.playerListByTeam) do 
-		if losingTeams[team] ~= nil then
-			
+		if team == losingTeam then
 			for j,playerDefeated in pairs(_mod.playerListByTeam[team]) do
-				
 				Core_SetPlayerDefeated(playerDefeated, Annihilation_LoserPresentation, WR_ANNIHILATION)
 				Obj_SetVisible(_mod.objectiveList[playerDefeated.PlayerID], false)
-				
 				-- elim message not working right now :(
 				--local elimMessage = Loc_FormatText("$5f1b3b821ca6400da3c9c36c7e65484b:51", playerDefeated.playerName)
 				--MeatGrinder_ShowEventCue(nil, {elimMessage})
