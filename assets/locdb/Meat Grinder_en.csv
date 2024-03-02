@@ -1,0 +1,48 @@
+﻿ID,Pipeline,PipelineStage,Notes,TranslationNotes,Tags,Text
+1,,,Mod name.,,,Meat Grinder (working on fixing desync)
+2,,,Mod description.,,,The meat grinder requires a sacrifice. Will you be able to stay away from the chopping block? \nThe player with the fewest kills is eliminated every set amount of time. Smaller maps with FFA recommended. \n\nCredit to KillerPigeon for the idea and many thanks to w*pro*k (sorry your name caused publish issues like you talk about smh) and FoxDie for letting me copy their homework.
+3,,,,,,Time Options
+4,,,,,,Time To First Elimination
+5,,,,,,Time Options
+6,,,,,,The amount of time between the beginning of the game and the first elimination.
+7,,,,,,Time Between Eliminations
+8,,,,,,Time between each subsequent elimination
+9,,,,,,Reset Points At Each Elimination
+10,,,,,,Reset every players kill points each time a player is eliminated.
+11,,,,,,Additional Point Reset Time
+12,,,,,,"Reset points at this game time, recommend choosing a number before the first elimination to create a sort of ""treaty"" time where kills don't count towards first elimination"
+13,,,,,,Kill Tracking Options
+14,,,,,,Kill Value Type
+15,,,,,,Unit Population Value
+16,,,,,,Unit Cost
+17,,,,,,Number of Kills
+18,,,,,,Buildings Count (1 point)
+19,,,,,,Victory Options (Can push down UI & is ugly)
+20,,,,,,Conquest
+21,,,,,,Religious
+22,,,,,,Wonder
+23,,,,,,heh yeah right
+24,,,,,,Double Starting Villagers
+25,,,,,,Starting Options
+26,,,,,,1
+27,,,,,,2
+28,,,,,,3
+29,,,,,,4
+30,,,,,,5
+31,,,,,,6
+32,,,,,,7
+33,,,,,,8
+34,,,,,,9
+35,,,,,,10
+36,,,,,,15
+37,,,,,,20
+38,,,,,,25
+39,,,,,,30
+40,,,,,,None
+41,,,,,,Get Kills Or Be Eliminated
+42,,,,,,Generic objective description
+43,,,,,,The first player/team with the fewest kills will be eliminated in %1INITIALTIME% minutes.
+44,,,,,,The next player/team with the fewest kills will be eliminated in %1INCREMENTALTIME% minutes.
+45,,,,,,60 seconds to next elim!
+46,,,,,,Time to next elimination:
+47,,,,,,%1PLAYERNAME%

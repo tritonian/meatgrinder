@@ -1,0 +1,28 @@
+<DataWarehouse>
+	<!--Meat Grinder/-->
+	<DataObject Name="Meat Grinder" Type="Mod" Id="7018493970078566935" Version="1">
+		<DataProperty Name="m_description" Type="Object">
+			<DataValue Name="util::ReflectLocString">7445241731305213789</DataValue>
+			<!--Meat Grinder/util::ReflectLocString/-->
+			<DataObject Name="" Type="util::ReflectLocString" Id="7445241731305213789" OwnerId="7018493970078566935">
+				<DataProperty Name="m_modPart2" Type="UInt32" Value="3412966795"/>
+				<DataProperty Name="m_modPart3" Type="UInt32" Value="60830703"/>
+				<DataProperty Name="m_modPart0" Type="UInt32" Value="655690156"/>
+				<DataProperty Name="m_modPart1" Type="UInt32" Value="1276548944"/>
+				<DataProperty Name="m_locStringKey" Type="Int32" Value="2"/>
+			</DataObject>
+		</DataProperty>
+		<DataProperty Name="m_name" Type="Object">
+			<DataValue Name="util::ReflectLocString">4191132585634474538</DataValue>
+			<!--Meat Grinder/util::ReflectLocString/-->
+			<DataObject Name="" Type="util::ReflectLocString" Id="4191132585634474538" OwnerId="7018493970078566935">
+				<DataProperty Name="m_modPart2" Type="UInt32" Value="3412966795"/>
+				<DataProperty Name="m_modPart3" Type="UInt32" Value="60830703"/>
+				<DataProperty Name="m_modPart0" Type="UInt32" Value="655690156"/>
+				<DataProperty Name="m_modPart1" Type="UInt32" Value="1276548944"/>
+				<DataProperty Name="m_locStringKey" Type="Int32" Value="1"/>
+			</DataObject>
+		</DataProperty>
+	</DataObject>
+</DataWarehouse>
+
