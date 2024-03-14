@@ -575,6 +575,10 @@ function MeatGrinder_ElimLowestKillsPlayer()
 		return
 	end
 	
+	Music_UnlockIntensity()
+	ResetMinimumIntensityMusicUnforced()
+	Sound_Play2D("mus_shared_victory_countdown_mix_event_reset")
+	
 	--if UI_IsReplay() then
 		---- show eventCue that a player is being eliminated
 		

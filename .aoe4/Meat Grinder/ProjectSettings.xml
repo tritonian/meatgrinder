@@ -9,8 +9,7 @@
 					<d2p1:Key>AssetExplorerGeneric</d2p1:Key>
 					<d2p1:Value>
 						<d2p1:string>assets\locdb</d2p1:string>
-						<d2p1:string>assets\scar\winconditions</d2p1:string>
-						<d2p1:string>assets\mod.png</d2p1:string>
+						<d2p1:string>assets\scar\winconditions\Meat Grinder.scar</d2p1:string>
 					</d2p1:Value>
 				</d2p1:KeyValueOfstringArrayOfstringty7Ep6D1>
 			</d3p1:ExpandedPaths>
@@ -18,29 +17,12 @@
 		</d2p1:anyType>
 		<d2p1:anyType xmlns:d3p1="http://schemas.datacontract.org/2004/07/Essence.Editor.ScriptEditor" i:type="d3p1:ScriptProjectSettings">
 			<d3p1:BookmarkSettings />
-			<d3p1:BreakpointSettings>
-				<d3p1:BreakpointSettings>
-					<d3p1:Column>1</d3p1:Column>
-					<d3p1:FileName>FileName|Script|assets\scar\winconditions\Meat Grinder.scar</d3p1:FileName>
-					<d3p1:IsEnabled>true</d3p1:IsEnabled>
-					<d3p1:Line>495</d3p1:Line>
-					<d3p1:Settings xmlns:d6p1="http://schemas.datacontract.org/2004/07/Essence.Editor.ScriptEditor.Controls">
-						<d6p1:ConditionalExpression></d6p1:ConditionalExpression>
-						<d6p1:ConditionalExpressionEnabled>false</d6p1:ConditionalExpressionEnabled>
-						<d6p1:ConditionalExpressionOperator>IsTrue</d6p1:ConditionalExpressionOperator>
-						<d6p1:HitCount>0</d6p1:HitCount>
-						<d6p1:HitCountEnabled>false</d6p1:HitCountEnabled>
-						<d6p1:HitCountOperator>Equal</d6p1:HitCountOperator>
-						<d6p1:PrintAction></d6p1:PrintAction>
-						<d6p1:PrintActionConsequence>ContinueExecution</d6p1:PrintActionConsequence>
-						<d6p1:PrintActionEnabled>false</d6p1:PrintActionEnabled>
-					</d3p1:Settings>
-				</d3p1:BreakpointSettings>
-			</d3p1:BreakpointSettings>
+			<d3p1:BreakpointSettings />
 		</d2p1:anyType>
 	</PluginSettings>
 	<RecentFiles>
 		<History xmlns:d3p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.scar</d3p1:string>
 			<d3p1:string>C:\Users\Alex\AppData\Local\Temp\mod.rrtex</d3p1:string>
 			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\mod.png</d3p1:string>
 			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.rdo</d3p1:string>
@@ -48,7 +30,6 @@
 			<d3p1:string>C:\Users\Alex\AppData\Local\Temp\nomad.scar</d3p1:string>
 			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\AOE4 Mod examples\nomad\2c3bf02fe16621047f10c412203380423ef2299799917ffa987e20118ef7f21e.sga</d3p1:string>
 			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\locdb\Meat Grinder.locdb</d3p1:string>
-			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.scar</d3p1:string>
 		</History>
 	</RecentFiles>
 </ProjectSettings>
