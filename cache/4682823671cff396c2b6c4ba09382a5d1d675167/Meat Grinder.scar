@@ -182,8 +182,8 @@ function MeatGrinder_OnInit()
 	
 	-----------------------------
 	-- FOR DEBUG
-	--_mod.initialTime = _mod.initialTime * 0.2
-	--_mod.incrementalTime = _mod.incrementalTime * 0.2
+	_mod.initialTime = _mod.initialTime * 0.1
+	_mod.incrementalTime = _mod.incrementalTime * 0.1
 	-----------------------------
 	
 	if options_selected.victory_options.conquest_victory == true then		
@@ -198,13 +198,12 @@ function MeatGrinder_OnInit()
 		import("winconditions/wonder.scar")	
 	end
 	
-	-- running this all the time now
-	----if UI_IsReplay() then
-		----print("Setting up observer UI")
-		----MeatGrinder_SetupObserverUI()
-	----end
+	if UI_IsReplay() then
+		print("Setting up observer UI")
+		MeatGrinder_SetupObserverUI()
+	end
 	
-	-- just allow it to run all the time?
+	-- FOR DEBUG
 	MeatGrinder_SetupObserverUI()
 end
 
@@ -639,7 +638,7 @@ function MeatGrinder_ElimLowestKillsPlayer()
 			for j,playerDefeated in pairs(_mod.playerListByTeam[team]) do
 				
 				Core_SetPlayerDefeated(playerDefeated, Annihilation_LoserPresentation, WR_ANNIHILATION)
-				--Obj_SetVisible(_mod.objectiveList[playerDefeated.PlayerID], false) -- don't need this anymore since we rebuild the list each time a kill happens?
+				Obj_SetVisible(_mod.objectiveList[playerDefeated.PlayerID], false)
 				
 				-- elim message not working right now :(
 				--local elimMessage = Loc_FormatText("$5f1b3b821ca6400da3c9c36c7e65484b:51", playerDefeated.playerName)
@@ -734,6 +733,28 @@ function MeatGrinder_SetupObserverUI()
 	
 	if _mod.is_ui_created == false then
 		
+		--for i,player in pairs(PLAYERS) do
+			
+			---- get player team id, if it's 10002 they aren't on a team
+			--local playerTeamID = Player_GetTeam(player.id)
+			--if playerTeamID == 10002 then -- no team selected
+				--playerTeamID = player.id.PlayerID
+			--end
+			---- if this team isn't in team list, add it
+			--if _mod.playerListByTeam[tostring(playerTeamID)] == nil then
+				--local newPList = {player.id}
+				--_mod.playerListByTeam[tostring(playerTeamID)] = newPList
+			--else
+				---- team already in team list, add player to existing team
+				--local actualPList = _mod.playerListByTeam[tostring(playerTeamID)]
+				--table.insert(actualPList, player.id)
+				--_mod.playerListByTeam[tostring(playerTeamID)] =  actualPList
+			--end
+		
+			--_mod.totalObjectivePointsByPlayer[player.id.PlayerID] = 0
+			
+		--end
+		
 		if _mod.objectiveType == 0 then
 			_mod.data_context.data.pointsText = "Kills"
 		elseif _mod.objectiveType == 1 then
@@ -742,11 +763,9 @@ function MeatGrinder_SetupObserverUI()
 			_mod.data_context.data.pointsText = "Kills Pop"
 		end
 		
-		local xaml
-		-- for debug just write "not" in front of UI_IsReplay()
 		if UI_IsReplay() then
 			-- original working xaml
-			xaml = [[
+			local xaml = [[
 					<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 						xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
@@ -802,8 +821,8 @@ function MeatGrinder_SetupObserverUI()
 					  </Grid>
 					]]
 		else
-			-- player xaml ui for red border when about to be eliminated - not really working yet
-			xaml = [[
+			-- player xaml ui for red border when about to be eliminated
+			local xaml = [[
 				<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 						xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
@@ -815,8 +834,8 @@ function MeatGrinder_SetupObserverUI()
 						<Grid
 							HorizontalAlignment="Center"
 							VerticalAlignment="Top"
-							Margin="0,150,0,0">
-							<TextBlock Text=""/>
+							Margin="0,120,0,0">
+							<TextBlock Text="You are close to being eliminated!!"/>
 						</Grid>
 			    </Border>
 				]]
@@ -824,7 +843,7 @@ function MeatGrinder_SetupObserverUI()
 		
 		
 		-- test xaml for background gradient
-			--xaml = [[
+		--local xaml = [[
 				--<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 						--xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 						--xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
@@ -890,7 +909,7 @@ function MeatGrinder_SetupObserverUI()
 			    --</Border>
 				--]]
 		
-		--print("Adding observer UI")
+		print("Adding observer UI")
 		UI_AddChild("ScarDefault", "XamlPresenter", _mod.ui, { IsHitTestVisible = true, Xaml = xaml, DataContext = UI_CreateDataContext(_mod.data_context) })
 		_mod.is_ui_created = true
 	end

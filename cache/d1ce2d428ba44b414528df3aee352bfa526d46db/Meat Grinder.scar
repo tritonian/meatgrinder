@@ -182,8 +182,8 @@ function MeatGrinder_OnInit()
 	
 	-----------------------------
 	-- FOR DEBUG
-	--_mod.initialTime = _mod.initialTime * 0.2
-	--_mod.incrementalTime = _mod.incrementalTime * 0.2
+	_mod.initialTime = _mod.initialTime * 0.2
+	_mod.incrementalTime = _mod.incrementalTime * 0.2
 	-----------------------------
 	
 	if options_selected.victory_options.conquest_victory == true then		
@@ -198,13 +198,12 @@ function MeatGrinder_OnInit()
 		import("winconditions/wonder.scar")	
 	end
 	
-	-- running this all the time now
-	----if UI_IsReplay() then
-		----print("Setting up observer UI")
-		----MeatGrinder_SetupObserverUI()
-	----end
+	if UI_IsReplay() then
+		print("Setting up observer UI")
+		MeatGrinder_SetupObserverUI()
+	end
 	
-	-- just allow it to run all the time?
+	-- FOR DEBUG? Or maybe just allow it to run all the time?
 	MeatGrinder_SetupObserverUI()
 end
 

@@ -55,4 +55,4 @@
 54,,,,,,Add Time If Surrender
 55,,,,,,Adds 2 minutes if someone leaves with less than 2 minutes remaining.
 56,,,,,,Punish Deletions
-57,,,,,,Remove half the deleted value (1 for straight kills) - doesn't go below 0.
+57,,,,,,Subtract deleted value - buildings half value. Can't go below 0.

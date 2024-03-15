@@ -182,8 +182,8 @@ function MeatGrinder_OnInit()
 	
 	-----------------------------
 	-- FOR DEBUG
-	--_mod.initialTime = _mod.initialTime * 0.2
-	--_mod.incrementalTime = _mod.incrementalTime * 0.2
+	_mod.initialTime = _mod.initialTime * 0.1
+	_mod.incrementalTime = _mod.incrementalTime * 0.1
 	-----------------------------
 	
 	if options_selected.victory_options.conquest_victory == true then		
@@ -198,13 +198,12 @@ function MeatGrinder_OnInit()
 		import("winconditions/wonder.scar")	
 	end
 	
-	-- running this all the time now
-	----if UI_IsReplay() then
-		----print("Setting up observer UI")
-		----MeatGrinder_SetupObserverUI()
-	----end
+	if UI_IsReplay() then
+		print("Setting up observer UI")
+		MeatGrinder_SetupObserverUI()
+	end
 	
-	-- just allow it to run all the time?
+	-- FOR DEBUG
 	MeatGrinder_SetupObserverUI()
 end
 
@@ -639,7 +638,7 @@ function MeatGrinder_ElimLowestKillsPlayer()
 			for j,playerDefeated in pairs(_mod.playerListByTeam[team]) do
 				
 				Core_SetPlayerDefeated(playerDefeated, Annihilation_LoserPresentation, WR_ANNIHILATION)
-				--Obj_SetVisible(_mod.objectiveList[playerDefeated.PlayerID], false) -- don't need this anymore since we rebuild the list each time a kill happens?
+				Obj_SetVisible(_mod.objectiveList[playerDefeated.PlayerID], false)
 				
 				-- elim message not working right now :(
 				--local elimMessage = Loc_FormatText("$5f1b3b821ca6400da3c9c36c7e65484b:51", playerDefeated.playerName)
@@ -734,6 +733,28 @@ function MeatGrinder_SetupObserverUI()
 	
 	if _mod.is_ui_created == false then
 		
+		--for i,player in pairs(PLAYERS) do
+			
+			---- get player team id, if it's 10002 they aren't on a team
+			--local playerTeamID = Player_GetTeam(player.id)
+			--if playerTeamID == 10002 then -- no team selected
+				--playerTeamID = player.id.PlayerID
+			--end
+			---- if this team isn't in team list, add it
+			--if _mod.playerListByTeam[tostring(playerTeamID)] == nil then
+				--local newPList = {player.id}
+				--_mod.playerListByTeam[tostring(playerTeamID)] = newPList
+			--else
+				---- team already in team list, add player to existing team
+				--local actualPList = _mod.playerListByTeam[tostring(playerTeamID)]
+				--table.insert(actualPList, player.id)
+				--_mod.playerListByTeam[tostring(playerTeamID)] =  actualPList
+			--end
+		
+			--_mod.totalObjectivePointsByPlayer[player.id.PlayerID] = 0
+			
+		--end
+		
 		if _mod.objectiveType == 0 then
 			_mod.data_context.data.pointsText = "Kills"
 		elseif _mod.objectiveType == 1 then
@@ -742,155 +763,191 @@ function MeatGrinder_SetupObserverUI()
 			_mod.data_context.data.pointsText = "Kills Pop"
 		end
 		
-		local xaml
-		-- for debug just write "not" in front of UI_IsReplay()
-		if UI_IsReplay() then
-			-- original working xaml
-			xaml = [[
-					<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-						xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
-						xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
-						xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
-						HorizontalAlignment="Left" 
-						VerticalAlignment="Bottom" 
-						SnapsToDevicePixels="True"
-						IsHitTestVisible="False"
-						Margin="20,20,20,500"
-						Width="250">
-						<Grid.Resources>
-							<ResourceDictionary.MergedDictionaries>
-								<ResourceDictionary Source="pack://application:,,,ui/Resources/HUDResources.xaml" />
-							</ResourceDictionary.MergedDictionaries>
-						</Grid.Resources>
-					      <Grid.ColumnDefinitions>
-					        <ColumnDefinition />
-					        <ColumnDefinition />
-					      </Grid.ColumnDefinitions>
-					      <Grid.RowDefinitions>
-					        <RowDefinition />
-					        <RowDefinition />
-					        <RowDefinition />
-					        <RowDefinition />
-					        <RowDefinition />
-					        <RowDefinition />
-					        <RowDefinition />
-					        <RowDefinition />
-					        <RowDefinition />
-					        <RowDefinition />
-					      </Grid.RowDefinitions>
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="0" Text="{Binding [data][player3name]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0" Text="{Binding [data][player4name]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="0" Text="{Binding [data][player5name]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0" Text="{Binding [data][player6name]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="0" Text="{Binding [data][player7name]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0" Text="{Binding [data][player8name]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
-					  </Grid>
-					]]
-		else
-			-- player xaml ui for red border when about to be eliminated - not really working yet
-			xaml = [[
-				<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-						xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
-						xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
-						xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
-						WindowState="Maximized"
-						SnapsToDevicePixels="True"
-						IsHitTestVisible="False">
-						<Grid
-							HorizontalAlignment="Center"
-							VerticalAlignment="Top"
-							Margin="0,150,0,0">
-							<TextBlock Text=""/>
-						</Grid>
-			    </Border>
-				]]
-		end
+		--if UI_IsReplay() then
+		--local xaml = [[
+			--<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+					--xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					--xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
+					--xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
+					--xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
+					--HorizontalAlignment="Left" 
+					--VerticalAlignment="Bottom" 
+					--SnapsToDevicePixels="True"
+					--IsHitTestVisible="False"
+					--Margin="20,20,20,500"
+					--Width="250"
+					--BorderThickness="5" 
+					--BorderBrush="Blue">
+		        --<Border.Background>
+		            --<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+		                --<GradientStop Color="Blue" Offset="0"/>
+		                --<GradientStop Color="Transparent" Offset="1"/>
+		            --</LinearGradientBrush>
+		        --</Border.Background>
+		        --<Grid>
+					--<Grid.Resources>
+						--<ResourceDictionary.MergedDictionaries>
+							--<ResourceDictionary Source="pack://application:,,,ui/Resources/HUDResources.xaml" />
+						--</ResourceDictionary.MergedDictionaries>
+					--</Grid.Resources>
+				      --<Grid.ColumnDefinitions>
+				        --<ColumnDefinition />
+				        --<ColumnDefinition />
+				      --</Grid.ColumnDefinitions>
+				      --<Grid.RowDefinitions>
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				      --</Grid.RowDefinitions>
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="0" Text="{Binding [data][player3name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0" Text="{Binding [data][player4name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="0" Text="{Binding [data][player5name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0" Text="{Binding [data][player6name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="0" Text="{Binding [data][player7name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0" Text="{Binding [data][player8name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
+		        --</Grid>
+		    --</Border>
+			--]]
+		--else
+		local xaml = [[
+			<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
+					xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
+					xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
+					HorizontalAlignment="Left" 
+					VerticalAlignment="Bottom" 
+					SnapsToDevicePixels="True"
+					IsHitTestVisible="False"
+					Margin="20,20,20,500"
+					Width="250"
+					BorderThickness="5" 
+					BorderBrush="Red">
+		        <Grid>
+					<Grid.Resources>
+						<ResourceDictionary.MergedDictionaries>
+							<ResourceDictionary Source="pack://application:,,,ui/Resources/HUDResources.xaml" />
+						</ResourceDictionary.MergedDictionaries>
+					</Grid.Resources>
+				      <Grid.ColumnDefinitions>
+				        <ColumnDefinition />
+				        <ColumnDefinition />
+				      </Grid.ColumnDefinitions>
+				      <Grid.RowDefinitions>
+				        <RowDefinition />
+				        <RowDefinition />
+				        <RowDefinition />
+				        <RowDefinition />
+				        <RowDefinition />
+				        <RowDefinition />
+				        <RowDefinition />
+				        <RowDefinition />
+				        <RowDefinition />
+				        <RowDefinition />
+				      </Grid.RowDefinitions>
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="0" Text="{Binding [data][player3name]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0" Text="{Binding [data][player4name]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="0" Text="{Binding [data][player5name]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0" Text="{Binding [data][player6name]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="0" Text="{Binding [data][player7name]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0" Text="{Binding [data][player8name]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
+				      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
+		        </Grid>
+		    </Border>
+			]]
+		--end
 		
-		
-		-- test xaml for background gradient
-			--xaml = [[
-				--<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-						--xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-						--xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
-						--xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
-						--xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
-						--HorizontalAlignment="Left" 
-						--VerticalAlignment="Bottom" 
-						--SnapsToDevicePixels="True"
-						--IsHitTestVisible="False"
-						--Margin="20,20,20,500"
-						--Width="250"
-						--BorderThickness="5" 
-						--BorderBrush="Blue">
-			        --<Border.Background>
-			            --<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-			                --<GradientStop Color="Blue" Offset="0"/>
-			                --<GradientStop Color="Transparent" Offset="1"/>
-			            --</LinearGradientBrush>
-			        --</Border.Background>
-			        --<Grid>
-						--<Grid.Resources>
-							--<ResourceDictionary.MergedDictionaries>
-								--<ResourceDictionary Source="pack://application:,,,ui/Resources/HUDResources.xaml" />
-							--</ResourceDictionary.MergedDictionaries>
-						--</Grid.Resources>
-					      --<Grid.ColumnDefinitions>
-					        --<ColumnDefinition />
-					        --<ColumnDefinition />
-					      --</Grid.ColumnDefinitions>
-					      --<Grid.RowDefinitions>
-					        --<RowDefinition />
-					        --<RowDefinition />
-					        --<RowDefinition />
-					        --<RowDefinition />
-					        --<RowDefinition />
-					        --<RowDefinition />
-					        --<RowDefinition />
-					        --<RowDefinition />
-					        --<RowDefinition />
-					        --<RowDefinition />
-					      --</Grid.RowDefinitions>
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="0" Text="{Binding [data][player3name]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0" Text="{Binding [data][player4name]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="0" Text="{Binding [data][player5name]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0" Text="{Binding [data][player6name]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="0" Text="{Binding [data][player7name]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0" Text="{Binding [data][player8name]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
-					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
-			        --</Grid>
-			    --</Border>
+		--local xaml = [[
+				--<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+					--xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					--xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
+					--xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
+					--xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
+					--HorizontalAlignment="Left" 
+					--VerticalAlignment="Bottom" 
+					--SnapsToDevicePixels="True"
+					--IsHitTestVisible="False"
+					--Margin="20,20,20,500"
+					--Width="250">
+					--<Grid.Resources>
+						--<ResourceDictionary.MergedDictionaries>
+							--<ResourceDictionary Source="pack://application:,,,ui/Resources/HUDResources.xaml" />
+						--</ResourceDictionary.MergedDictionaries>
+					--</Grid.Resources>
+				      --<Grid.ColumnDefinitions>
+				        --<ColumnDefinition />
+				        --<ColumnDefinition />
+				      --</Grid.ColumnDefinitions>
+				      --<Grid.RowDefinitions>
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				        --<RowDefinition />
+				      --</Grid.RowDefinitions>
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="0" Text="{Binding [data][player3name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0" Text="{Binding [data][player4name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="0" Text="{Binding [data][player5name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0" Text="{Binding [data][player6name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="0" Text="{Binding [data][player7name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0" Text="{Binding [data][player8name]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
+				      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
+				  --</Grid>
 				--]]
 		
-		--print("Adding observer UI")
+		print("Adding observer UI")
 		UI_AddChild("ScarDefault", "XamlPresenter", _mod.ui, { IsHitTestVisible = true, Xaml = xaml, DataContext = UI_CreateDataContext(_mod.data_context) })
 		_mod.is_ui_created = true
 	end
