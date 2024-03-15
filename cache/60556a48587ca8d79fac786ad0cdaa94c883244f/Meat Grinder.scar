@@ -424,10 +424,9 @@ function EventCallOnEntityKilled(context)
 		print("Killer killed themselves.")
 		if _mod.punishDelete then
 			print("Punishing deletion.")
-			
 			if World_OwnsEntity(context.killer) then
 				print("World killed???")
-				--maybe return here if the world DOESN'T own since it should own deleted unit apparently
+				--return
 			end	
 			
 			-- covers units of eliminated players
@@ -440,24 +439,20 @@ function EventCallOnEntityKilled(context)
 				return
 			end
 			
-			local player = nil
-			
 			if Entity_IsBuilding(context.victim) then
-				player = context.victimOwner
+				local player = context.victimOwner.PlayerID
 				if player == nil then 
 					return
 				end
 			else
-				player = Squad_GetPlayerOwner(context.victimSquad)
+				local player = Squad_GetPlayerOwner(context.victimSquad)
 				if player == nil then 
-					print("No player found.")
 					return
 				end
 			end
 				
 			local owner = Core_GetPlayersTableEntry(player)
 			if owner == nil then 
-				print("no owner found")
 				return
 			end
 			

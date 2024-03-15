@@ -423,48 +423,6 @@ function EventCallOnEntityKilled(context)
 	if context.killer.EntityID == context.victim.EntityID then
 		print("Killer killed themselves.")
 		if _mod.punishDelete then
-			print("Punishing deletion.")
-			
-			if World_OwnsEntity(context.killer) then
-				print("World killed???")
-				--maybe return here if the world DOESN'T own since it should own deleted unit apparently
-			end	
-			
-			-- covers units of eliminated players
-			if context["victimOwner"] == nil then
-				print("victim owner is nil")
-				return
-			end
-			
-			if Entity_IsBuilding(context.victim) and _mod.buildings_count_as_kills == false then
-				return
-			end
-			
-			local player = nil
-			
-			if Entity_IsBuilding(context.victim) then
-				player = context.victimOwner
-				if player == nil then 
-					return
-				end
-			else
-				player = Squad_GetPlayerOwner(context.victimSquad)
-				if player == nil then 
-					print("No player found.")
-					return
-				end
-			end
-				
-			local owner = Core_GetPlayersTableEntry(player)
-			if owner == nil then 
-				print("no owner found")
-				return
-			end
-			
-			if _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] == nil then 
-				return
-			end
-			
 			local cost = getSelfCost(context.victim, context.victimOwner)
 			local victimBP = Entity_GetBlueprint(context.victim)
 			local victimPop =  EBP_PopulationCost(victimBP, context.victimOwner, CT_Personnel)
@@ -477,7 +435,8 @@ function EventCallOnEntityKilled(context)
 			-- unit value
 			if _mod.objectiveType == 1 then
 				-- could do a check here for outlier bugs like JD costing 50
-				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] - math.ceil(cost / 2)
+				-- do buildings work?
+				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] - math.floor(cost / 2)
 			end
 			
 			-- unit population (buildings don't have population - give 1 point for buildings if turned on?)
@@ -485,7 +444,7 @@ function EventCallOnEntityKilled(context)
 				if Entity_IsBuilding(context.victim) then
 					victimPop = 1
 				end
-				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] - math.ceil(victimPop / 2)
+				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] - math.floor(victimPop / 2)
 			end
 			
 			if _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] < 0 then
@@ -903,7 +862,7 @@ function MeatGrinder_SetupObserverUI()
 				  --</Grid>
 				--]]
 		
-		print("Adding observer UI")
+		
 		UI_AddChild("ScarDefault", "XamlPresenter", _mod.ui, { IsHitTestVisible = true, Xaml = xaml, DataContext = UI_CreateDataContext(_mod.data_context) })
 		_mod.is_ui_created = true
 	end

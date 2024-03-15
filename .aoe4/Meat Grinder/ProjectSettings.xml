@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ProjectSettings xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/Essence.Editor.Core">
-	<LastDocumentDirectory i:nil="true" />
+	<LastDocumentDirectory>Y:\SteamLibrary\steamapps\common\Age of Empires IV\cardinal\archives</LastDocumentDirectory>
 	<LastDocumentType i:nil="true" />
 	<PluginSettings xmlns:d2p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
 		<d2p1:anyType xmlns:d3p1="http://schemas.datacontract.org/2004/07/Essence.Editor.Controls" i:type="d3p1:FileExplorerProjectSettings">
@@ -22,14 +22,16 @@
 	</PluginSettings>
 	<RecentFiles>
 		<History xmlns:d3p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+			<d3p1:string>C:\Users\Alex\AppData\Local\Temp\classic_start.scar</d3p1:string>
+			<d3p1:string>C:\Users\Alex\AppData\Local\Temp\soundbanks.lua</d3p1:string>
+			<d3p1:string>Y:\SteamLibrary\steamapps\common\Age of Empires IV\cardinal\archives\Data.sga</d3p1:string>
+			<d3p1:string>Y:\SteamLibrary\steamapps\common\Age of Empires IV\tools\archives\Data.sga</d3p1:string>
+			<d3p1:string>Y:\SteamLibrary\steamapps\common\Age of Empires IV\common\archives\Data.sga</d3p1:string>
+			<d3p1:string>Y:\SteamLibrary\steamapps\common\Age of Empires IV\engine\archives\UI.sga</d3p1:string>
+			<d3p1:string>Y:\SteamLibrary\steamapps\common\Age of Empires IV\engine\archives\Data.sga</d3p1:string>
 			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.scar</d3p1:string>
 			<d3p1:string>C:\Users\Alex\AppData\Local\Temp\mod.rrtex</d3p1:string>
 			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\mod.png</d3p1:string>
-			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.rdo</d3p1:string>
-			<d3p1:string>C:\Users\Alex\AppData\Local\Temp\buildingreqs.scar</d3p1:string>
-			<d3p1:string>C:\Users\Alex\AppData\Local\Temp\nomad.scar</d3p1:string>
-			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\AOE4 Mod examples\nomad\2c3bf02fe16621047f10c412203380423ef2299799917ffa987e20118ef7f21e.sga</d3p1:string>
-			<d3p1:string>C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\locdb\Meat Grinder.locdb</d3p1:string>
 		</History>
 	</RecentFiles>
 </ProjectSettings>

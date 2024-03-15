@@ -1,6 +1,6 @@
 ﻿ID,Pipeline,PipelineStage,Notes,TranslationNotes,Tags,Text
 1,,,Mod name.,,,Meat Grinder
-2,,,Mod description.,,,The meat grinder requires a sacrifice. Will you be able to stay away from the chopping block? \nThe player with the fewest kills is eliminated every set amount of time. Smaller maps with FFA recommended. \n\nCredit to KillerPigeon for the idea and many thanks to W*pr*ck (sorry your name caused publish issues like you talk about smh) and FoxDie for letting me copy their homework.
+2,,,Mod description.,,,The meat grinder requires a sacrifice. Will you be able to stay away from the chopping block? \nThe player with the fewest kills is eliminated every set amount of time. Smaller maps with FFA recommended. \n\nCredit to KillerPigeon for the idea and many thanks to Zlatý Bludišťak (sorry your username caused publish issues like you talk about smh) and FoxDie for letting me copy their homework.
 3,,,,,,Time Options
 4,,,,,,Time To First Elimination
 5,,,,,,Time Options
@@ -16,7 +16,7 @@
 15,,,,,,Unit Population Value
 16,,,,,,Unit Cost
 17,,,,,,Number of Kills
-18,,,,,,Buildings Count (1 point)
+18,,,,,,Buildings Count
 19,,,,,,Victory Options (Can push down UI & is ugly)
 20,,,,,,Conquest
 21,,,,,,Religious
@@ -52,3 +52,7 @@
 51,,,,,,How point ties are handled. More options coming soon?
 52,,,,,,Unit cost might be a bit buggy - like Joan only worth 50. 
 53,,,,,,Doubles starting villagers - OOTD only gets 5 while others get 6
+54,,,,,,Add Time If Surrender
+55,,,,,,Adds 2 minutes if someone leaves with less than 2 minutes remaining.
+56,,,,,,Punish Deletions
+57,,,,,,Remove half the deleted value (1 for straight kills) - doesn't go below 0.
