@@ -938,7 +938,7 @@ function MeatGrinder_UpdateObserverVars()
 	-- lol find a way to make this into a for loop with dynamic variable names
 	-- consider checking if player is dead and changing string to "X-X" or even leaving them off the table by setting name and score to ""
 	
-	for i=1, #PLAYERS do
+	for i=1, 8 do
 		local player = MeatGrinder_GetHighestUnusedPlayerForObserver()
 		if player == nil then
 			return
@@ -948,11 +948,12 @@ function MeatGrinder_UpdateObserverVars()
 		if player.isEliminated then 
 			_mod.data_context.data["player" .. i .. "name"] = ""
 			_mod.data_context.data["player" .. i .. "points"] = "" 
-		else
-			local points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
-			_mod.data_context.data["player" .. i .. "name"] = Loc_FormatText(player.playerName)
-			_mod.data_context.data["player" .. i .. "points"] = string.format("%00d", points)
+			return
 		end
+		
+		local points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+		_mod.data_context.data["player" .. i .. "name"] = Loc_FormatText(player.playerName)
+		_mod.data_context.data["player" .. i .. "points"] = string.format("%00d", points)
 	end
 	
 	--local player = MeatGrinder_GetHighestUnusedPlayerForObserver()
