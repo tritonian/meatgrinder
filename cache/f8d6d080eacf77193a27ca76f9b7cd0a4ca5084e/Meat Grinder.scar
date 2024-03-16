@@ -186,8 +186,8 @@ function MeatGrinder_OnInit()
 	
 	-----------------------------
 	-- FOR DEBUG
-	_mod.initialTime = _mod.initialTime * 0.2
-	_mod.incrementalTime = _mod.incrementalTime * 0.2
+	--_mod.initialTime = _mod.initialTime * 0.2
+	--_mod.incrementalTime = _mod.incrementalTime * 0.2
 	-----------------------------
 	
 	if options_selected.victory_options.conquest_victory == true then		
@@ -575,10 +575,8 @@ function EventCallOnPlayerKilled(context)
 		MeatGrinder_UpdateUI()
 	end
 	
-	if context.player.PlayerID == _mod.localPlayer.id.PlayerID then
-		if _mod.revealOnElim then
-			FOW_UIRevealAll()
-		end
+	if player == AGS_GS_LOCAL_PLAYER then
+		FOW_UIRevealAll()
 	end
 end
 

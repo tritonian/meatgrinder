@@ -575,10 +575,8 @@ function EventCallOnPlayerKilled(context)
 		MeatGrinder_UpdateUI()
 	end
 	
-	if context.player.PlayerID == _mod.localPlayer.id.PlayerID then
-		if _mod.revealOnElim then
-			FOW_UIRevealAll()
-		end
+	if player == _mod.localPlayer then
+		FOW_UIRevealAll()
 	end
 end
 
