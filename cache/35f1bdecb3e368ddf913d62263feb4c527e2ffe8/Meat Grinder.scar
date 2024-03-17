@@ -190,9 +190,9 @@ function MeatGrinder_OnInit()
 	print("Reveal on elim: ", _mod.revealOnElim)
 	
 	-----------------------------
-	-- FOR DEBUG - make this a dev setting
-	--_mod.initialTime = _mod.initialTime * 0.2
-	--_mod.incrementalTime = _mod.incrementalTime * 0.2
+	-- FOR DEBUG
+	_mod.initialTime = _mod.initialTime * 0.2
+	_mod.incrementalTime = _mod.incrementalTime * 0.2
 	-----------------------------
 	
 	if options_selected.victory_options.conquest_victory == true then		
@@ -580,23 +580,15 @@ function EventCallOnEntityKilled(context)
 end
 
 function EventCallOnPlayerKilled(context)
-	print("Player killed triggered.")
-	-- add time if quitters or people are eliminated near the time but not eliminated by timer
+	
+	-- add time if quitters or people are eliminated near the time
+	-- DOES THIS WORK FOR PLAYERS ELIMINATED BY TIMER? WHAT IS TIMER STATE?
 	if _mod.addQuitterTime then
 		-- if less than half the incremental time is remaining then add some time. Checks for close to zero because I assume timer is at 0 when it elims players
 		local timeLeft = Objective_GetTimerSeconds(_mod.localTimerObjectiveForUI)
 		if timeLeft < (_mod.incrementalTime * 30) and timeLeft > 0.5 then
-			print("Adding time for leaver.")
 			-- kill existing elim oneshot rule
 			Rule_RemoveWithID(_mod.elimOneShotRule)
-			Rule_Remove(MeatGrinder_ElimLowestKillsPlayer)
-			if Rule_ExistsWithID(_mod.elimOneShotRule) then
-				print("Something went wrong, rule with ID exists.")
-			end
-			
-			if Rule_Exists(MeatGrinder_ElimLowestKillsPlayer) then
-				print("Something went wrong, rule with function exists.")
-			end
 			
 			-- message telling about time addition
 			Rule_AddOneShot(MeatGrinder_ShowEventCue, 5, {message = additionalTimeMessage})

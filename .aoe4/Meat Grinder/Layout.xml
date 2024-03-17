@@ -8,20 +8,16 @@
     </LayoutAnchorablePaneGroup>
     <LayoutPanel Orientation="Vertical">
       <LayoutDocumentPane>
-        <LayoutDocument Title="Meat Grinder.scar" IsSelected="True" IsLastFocusedDocument="True" ContentId="FileName|Script|assets\scar\winconditions\Meat Grinder.scar" ToolTip="C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.scar" LastActivationTimeStamp="03/16/2024 14:10:53" />
-        <LayoutDocument Title="Meat Grinder.rdo" ContentId="Reflect|Essence.Editor.ReflectEditor.Controls.DefaultReflectControlActivator|0x40F2795E08803656" LastActivationTimeStamp="03/15/2024 20:16:13" />
-        <LayoutDocument Title="Meat Grinder.locdb" ContentId="FileName|LocDB|assets\locdb\Meat Grinder.locdb" ToolTip="C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\locdb\Meat Grinder.locdb" LastActivationTimeStamp="03/14/2024 20:32:25" />
+        <LayoutDocument Title="Meat Grinder.scar" IsSelected="True" IsLastFocusedDocument="True" ContentId="FileName|Script|assets\scar\winconditions\Meat Grinder.scar" ToolTip="C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.scar" LastActivationTimeStamp="03/16/2024 20:06:52" />
+        <LayoutDocument Title="Meat Grinder.rdo" ContentId="Reflect|Essence.Editor.ReflectEditor.Controls.DefaultReflectControlActivator|0x40F2795E08803656" LastActivationTimeStamp="03/16/2024 15:30:13" />
+        <LayoutDocument Title="Meat Grinder.locdb" ContentId="FileName|LocDB|assets\locdb\Meat Grinder.locdb" ToolTip="C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\locdb\Meat Grinder.locdb" LastActivationTimeStamp="03/16/2024 15:02:42" />
       </LayoutDocumentPane>
       <LayoutAnchorablePane Id="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" Name="anchorablesPane" DockHeight="446">
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Output" ContentId="Output" LastActivationTimeStamp="03/16/2024 13:47:51" />
+        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Output" IsSelected="True" ContentId="Output" LastActivationTimeStamp="03/16/2024 13:47:51" />
         <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Error List" ContentId="ErrorList" LastActivationTimeStamp="03/16/2024 13:55:18" />
         <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Object Browser" ContentId="ScenarioEditor.ObjectBrowser" LastActivationTimeStamp="02/22/2024 20:20:49" />
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Call Stack" IsSelected="True" ContentId="CallStack" LastActivationTimeStamp="03/16/2024 14:18:18" />
         <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Palettes" ContentId="ScenarioEditor.Palettes" LastActivationTimeStamp="02/22/2024 20:21:07" />
         <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Find Results 1" ContentId="FindResults" LastActivationTimeStamp="02/22/2024 20:21:06" />
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Watch 1" ContentId="Watch1" LastActivationTimeStamp="03/16/2024 14:18:18" />
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Locals" ContentId="Locals" LastActivationTimeStamp="03/16/2024 14:18:18" />
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Globals" ContentId="Globals" LastActivationTimeStamp="03/16/2024 14:18:18" />
       </LayoutAnchorablePane>
     </LayoutPanel>
     <LayoutAnchorablePaneGroup Orientation="Vertical" DockWidth="99" DockHeight="200">
@@ -43,5 +39,9 @@
     <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Find References Results 1" IsSelected="True" ContentId="FindReferencesResults1" LastActivationTimeStamp="03/13/2024 19:17:24" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="6" />
     <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Properties" IsSelected="True" ContentId="EssenceEditor.Properties" FloatingLeft="200" FloatingTop="200" FloatingWidth="300" FloatingHeight="800" LastActivationTimeStamp="03/13/2024 19:17:24" PreviousContainerId="43fbc311-95a7-4509-962c-f066927be4a3" PreviousContainerIndex="0" />
     <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Playback" IsSelected="True" ContentId="EssenceEditor.Playback" FloatingLeft="200" FloatingTop="200" FloatingWidth="300" FloatingHeight="100" LastActivationTimeStamp="03/13/2024 19:17:24" PreviousContainerId="b38764f5-98f2-48ac-934d-b872c0f5dad0" PreviousContainerIndex="0" />
+    <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Watch 1" ContentId="Watch1" LastActivationTimeStamp="03/16/2024 20:06:28" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="6" />
+    <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Globals" ContentId="Globals" LastActivationTimeStamp="03/16/2024 20:06:28" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="7" />
+    <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Locals" ContentId="Locals" LastActivationTimeStamp="03/16/2024 20:06:28" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="6" />
+    <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Call Stack" ContentId="CallStack" LastActivationTimeStamp="03/16/2024 20:06:28" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="3" />
   </Hidden>
 </LayoutRoot>

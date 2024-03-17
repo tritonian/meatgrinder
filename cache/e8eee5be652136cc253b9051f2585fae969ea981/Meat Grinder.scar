@@ -581,7 +581,8 @@ end
 
 function EventCallOnPlayerKilled(context)
 	print("Player killed triggered.")
-	-- add time if quitters or people are eliminated near the time but not eliminated by timer
+	-- add time if quitters or people are eliminated near the time
+	-- DOES THIS WORK FOR PLAYERS ELIMINATED BY TIMER? WHAT IS TIMER STATE?
 	if _mod.addQuitterTime then
 		-- if less than half the incremental time is remaining then add some time. Checks for close to zero because I assume timer is at 0 when it elims players
 		local timeLeft = Objective_GetTimerSeconds(_mod.localTimerObjectiveForUI)
@@ -589,7 +590,6 @@ function EventCallOnPlayerKilled(context)
 			print("Adding time for leaver.")
 			-- kill existing elim oneshot rule
 			Rule_RemoveWithID(_mod.elimOneShotRule)
-			Rule_Remove(MeatGrinder_ElimLowestKillsPlayer)
 			if Rule_ExistsWithID(_mod.elimOneShotRule) then
 				print("Something went wrong, rule with ID exists.")
 			end

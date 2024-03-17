@@ -58,3 +58,6 @@
 57,,,,,,Subtract deleted value - buildings half value. Can't go below 0.
 58,,,,,,Reveal On Elim
 59,,,,,,When a player is eliminated the map is revealed for them.
+60,,,,,,Additional Elim Time
+61,,,,,,"Adds time to half the incremental time if someone dies/leaves when timer is close to 0. For example if there is 1 min left on a 4 min increment, reset to 2 min."
+62,,,,,,Adding time because someone died! SHAME! SHAME! SHAME!
