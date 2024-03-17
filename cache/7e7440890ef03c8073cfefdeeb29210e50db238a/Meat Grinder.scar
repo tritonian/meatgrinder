@@ -846,7 +846,7 @@ function MeatGrinder_SetupObserverUI()
 							</ResourceDictionary.MergedDictionaries>
 						</Grid.Resources>
 						<Grid.Background>
-        					<SolidColorBrush Color="#40000000"/>
+        					<SolidColorBrush Color="#20000000"/>
    						</Grid.Background>
 					      <Grid.ColumnDefinitions>
 					        <ColumnDefinition />

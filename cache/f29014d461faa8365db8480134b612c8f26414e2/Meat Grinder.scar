@@ -827,7 +827,7 @@ function MeatGrinder_SetupObserverUI()
 		local xaml
 		-- for debug just write "not" in front of UI_IsReplay()
 		if not UI_IsReplay() then
-			-- original working xaml -- #CCCCCCCC light gray #600044AA royal blue
+			-- original working xaml
 			xaml = [[
 					<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -846,7 +846,7 @@ function MeatGrinder_SetupObserverUI()
 							</ResourceDictionary.MergedDictionaries>
 						</Grid.Resources>
 						<Grid.Background>
-        					<SolidColorBrush Color="#40000000"/>
+        					<SolidColorBrush Color="#400044AA"/>
    						</Grid.Background>
 					      <Grid.ColumnDefinitions>
 					        <ColumnDefinition />
