@@ -263,13 +263,6 @@ function MeatGrinder_Start()
 	
 	Rule_AddOneShot(MeatGrinder_ShowEventCue, 5, {message = initialMessage})
 	Rule_AddOneShot(MeatGrinder_ShowEventCue, (_mod.initialTime * 60)-60, {message = timeWarningMessage})
-	
-	-- moved this to after a player is eliminated setup another warning
-	--for i = 0, 6 do
-		--Rule_AddOneShot(MeatGrinder_ShowEventCue, 60 * _mod.initialTime + 5 + _mod.incrementalTime * 60 * i, {message = incrementMessage})
-		--local warnTime = (60 * _mod.initialTime +  _mod.incrementalTime * 60 * (i+1))-60
-		--Rule_AddOneShot(MeatGrinder_ShowEventCue, warnTime, {message = timeWarningMessage})
-	--end
 end
 
 function MeatGrinder_OnGameOver()

@@ -3,12 +3,12 @@
   <RootPanel Orientation="Horizontal">
     <LayoutAnchorablePaneGroup Orientation="Horizontal" DockWidth="235" FloatingWidth="300" FloatingHeight="800" FloatingLeft="200" FloatingTop="200">
       <LayoutAnchorablePane DockHeight="200" FloatingWidth="300" FloatingHeight="800" FloatingLeft="200" FloatingTop="200">
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Asset Explorer" IsSelected="True" ContentId="EssenceEditor.AssetExplorer" FloatingLeft="200" FloatingTop="200" FloatingWidth="300" FloatingHeight="800" LastActivationTimeStamp="03/18/2024 15:56:00" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="1" />
+        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Asset Explorer" IsSelected="True" ContentId="EssenceEditor.AssetExplorer" FloatingLeft="200" FloatingTop="200" FloatingWidth="300" FloatingHeight="800" LastActivationTimeStamp="03/18/2024 16:06:37" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="1" />
       </LayoutAnchorablePane>
     </LayoutAnchorablePaneGroup>
     <LayoutPanel Orientation="Vertical">
       <LayoutDocumentPane>
-        <LayoutDocument Title="Meat Grinder.scar" IsSelected="True" IsLastFocusedDocument="True" ContentId="FileName|Script|assets\scar\winconditions\Meat Grinder.scar" ToolTip="C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.scar" LastActivationTimeStamp="03/18/2024 15:56:12" />
+        <LayoutDocument Title="Meat Grinder.scar*" IsSelected="True" IsLastFocusedDocument="True" ContentId="FileName|Script|assets\scar\winconditions\Meat Grinder.scar" ToolTip="C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\scar\winconditions\Meat Grinder.scar" LastActivationTimeStamp="03/18/2024 16:06:38" />
         <LayoutDocument Title="Meat Grinder.rdo" ContentId="Reflect|Essence.Editor.ReflectEditor.Controls.DefaultReflectControlActivator|0x40F2795E08803656" LastActivationTimeStamp="03/18/2024 15:56:08" />
         <LayoutDocument Title="Meat Grinder.locdb" ContentId="FileName|LocDB|assets\locdb\Meat Grinder.locdb" ToolTip="C:\Users\Alex\Documents\My AOE4 Mods\Meat Grinder\Meat Grinder\assets\locdb\Meat Grinder.locdb" LastActivationTimeStamp="03/18/2024 15:56:09" />
       </LayoutDocumentPane>
