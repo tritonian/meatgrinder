@@ -83,8 +83,7 @@ _mod = {
 			player8points = "",
 			timerSecondsLeft = "0",
 			pointsText = "",
-			localPlayerWarningText = "",
-			localPlayerWarningTextPadding = "0"
+			localPlayerWarningText = "Default Text",
 		},
 	},
 }
@@ -111,20 +110,8 @@ function MeatGrinder_OnInit()
 	local optionInitialTime = options_selected.time_options.time_before_first_elim.enum_value
 	if optionInitialTime ==  options_selected.time_options.time_before_first_elim.enum_items.min5 then
 		_mod.initialTime = 5
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min6 then
-		_mod.initialTime = 6
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min7 then
-		_mod.initialTime = 7
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min8 then
-		_mod.initialTime = 8
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min9 then
-		_mod.initialTime = 9
 	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min10 then
 		_mod.initialTime = 10
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min11 then
-		_mod.initialTime = 11
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min12 then
-		_mod.initialTime = 12
 	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min15 then
 		_mod.initialTime = 15
 	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min20 then
@@ -339,6 +326,9 @@ function MeatGrinder_UpdatePlayerObjectiveList()
 		end
 	end
 	
+	_mod.lowestPoints = math.huge
+	_mod.secondLowestPoints = math.huge
+	
 	_mod.objectiveList = {}
 	
 	local lastPlayer = nil
@@ -364,7 +354,17 @@ function MeatGrinder_UpdatePlayerObjectiveList()
 				if thisPlayersPoints >= maxPoints then
 					nextPlayerToAddToList = player
 					maxPoints = thisPlayersPoints
-				end						
+				end
+				
+				
+				-- update lowest points tracker
+				if thisPlayersPoints < _mod.lowestPoints then
+					_mod.secondLowestPoints = _mod.lowestPoints
+					_mod.lowestPoints = thisPlayersPoints
+				elseif thisPlayersPoints < _mod.secondLowestPoints then
+					_mod.secondLowestPoints = thisPlayersPoints
+				end
+						
 			end
 		end
 		
@@ -387,24 +387,8 @@ function MeatGrinder_UpdatePlayerObjectiveList()
 		playersUsed[nextPlayerToAddToList.id.PlayerID] = 0
 	end
 	
-	
-	-- update lowest points tracker --
-	_mod.lowestPoints = math.huge
-	_mod.secondLowestPoints = math.huge
-	
-	for j,player in pairs(PLAYERS) do
-		
-		thisPlayersPoints = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
-		
-		if player.isEliminated then
-			--print("Skipping this player.")
-		elseif thisPlayersPoints < _mod.lowestPoints then
-			_mod.secondLowestPoints = _mod.lowestPoints
-			_mod.lowestPoints = thisPlayersPoints
-		elseif thisPlayersPoints < _mod.secondLowestPoints then
-			_mod.secondLowestPoints = thisPlayersPoints
-		end
-	end
+	-- TODO: set player with lowest kills objective color to red?
+	-- can grab last player by keeping track of previous player checked then when we hit the nil nextPlayer can set the lastPlayer to red. Need to check for ties too.
 end
 
 function MeatGrinder_DoubleVillager()
@@ -609,7 +593,6 @@ function EventCallOnEntityKilled(context)
 	
 	-- update kills tracker UI
 	MeatGrinder_UpdatePlayerObjectiveList()
-	MeatGrinder_UpdateUI()
 end
 
 function EventCallOnPlayerKilled(context)
@@ -937,11 +920,11 @@ function MeatGrinder_SetupObserverUI()
 				                <ColumnDefinition Width="*" />
 				            </Grid.ColumnDefinitions>
 				            <Grid.RowDefinitions>
-				            	<RowDefinition Height="0.55*" />
-		          				<RowDefinition Height="Auto" />
-		          				<RowDefinition Height="*" />
+				            	<RowDefinition Width="*" />
+						        <RowDefinition Width="0.20*" />
+						        <RowDefinition Width="*" />
 				            </Grid.RowDefinitions>
-							<TextBlock Padding="{Binding [data][localPlayerWarningTextPadding]}" Text="{Binding [data][localPlayerWarningText]}" FontWeight="Bold" FontSize="14" Background="#65FFFFFF" Foreground="Firebrick" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" />
+							<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding [data][localPlayerWarningText]}"/>
 						</Grid>
 			    </Border>
 				]]
@@ -990,24 +973,18 @@ function MeatGrinder_UpdateObserverVars()
 	end
 	
 	-- get local player's points for updating player UI
-	local localPlayerPoints = _mod.totalObjectivePointsByPlayer[_mod.localPlayer.id.PlayerID]
+	local localPlayerPoints = _mod.totalObjectivePointsByPlayer[_mod.localPlayer.id.PlayerID] -- might have wrong index here
 	-- player warning UI update
 	if secondsLeft < _mod.incrementalTime * 60 * 0.75 then
-		if localPlayerPoints <= _mod.lowestPoints then
-			-- in last or tied for last
-			_mod.data_context.data.localPlayerWarningText = "On the chopping block! Get kills!"
-			_mod.data_context.data.localPlayerWarningTextPadding = "5,5,5,5"
-		elseif localPlayerPoints <= _mod.secondLowestPoints then
-			-- in second to last or tied for it
-			_mod.data_context.data.localPlayerWarningText = "Second to last place! Get kills!"
-			_mod.data_context.data.localPlayerWarningTextPadding = "5,5,5,5"
+		if localPlayerPoints < _mod.lowestPoints then
+			-- update message to be "you are in last place!"
+			_mod.data_context.data.localPlayerWarningText = "You are in last place!"
+		elseif localPlayerPoints < _mod.secondLowestPoints then
+			-- update message to be "you are in danger of being eliminated!!"
+			_mod.data_context.data.localPlayerWarningText = "You are close to last place!"
 		else
-			_mod.data_context.data.localPlayerWarningText = ""
-			_mod.data_context.data.localPlayerWarningTextPadding = "0"
+			_mod.data_context.data.localPlayerWarningText = "No Text"
 		end
-	else
-		_mod.data_context.data.localPlayerWarningText = ""
-		_mod.data_context.data.localPlayerWarningTextPadding = "0"
 	end
 end
 

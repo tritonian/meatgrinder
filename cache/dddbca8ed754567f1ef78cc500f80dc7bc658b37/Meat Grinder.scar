@@ -111,20 +111,8 @@ function MeatGrinder_OnInit()
 	local optionInitialTime = options_selected.time_options.time_before_first_elim.enum_value
 	if optionInitialTime ==  options_selected.time_options.time_before_first_elim.enum_items.min5 then
 		_mod.initialTime = 5
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min6 then
-		_mod.initialTime = 6
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min7 then
-		_mod.initialTime = 7
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min8 then
-		_mod.initialTime = 8
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min9 then
-		_mod.initialTime = 9
 	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min10 then
 		_mod.initialTime = 10
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min11 then
-		_mod.initialTime = 11
-	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min12 then
-		_mod.initialTime = 12
 	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min15 then
 		_mod.initialTime = 15
 	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min20 then
@@ -397,7 +385,7 @@ function MeatGrinder_UpdatePlayerObjectiveList()
 		thisPlayersPoints = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
 		
 		if player.isEliminated then
-			--print("Skipping this player.")
+			print("Skipping this player.")
 		elseif thisPlayersPoints < _mod.lowestPoints then
 			_mod.secondLowestPoints = _mod.lowestPoints
 			_mod.lowestPoints = thisPlayersPoints
@@ -609,7 +597,6 @@ function EventCallOnEntityKilled(context)
 	
 	-- update kills tracker UI
 	MeatGrinder_UpdatePlayerObjectiveList()
-	MeatGrinder_UpdateUI()
 end
 
 function EventCallOnPlayerKilled(context)
@@ -999,7 +986,7 @@ function MeatGrinder_UpdateObserverVars()
 			_mod.data_context.data.localPlayerWarningTextPadding = "5,5,5,5"
 		elseif localPlayerPoints <= _mod.secondLowestPoints then
 			-- in second to last or tied for it
-			_mod.data_context.data.localPlayerWarningText = "Second to last place! Get kills!"
+			_mod.data_context.data.localPlayerWarningText = "Second place! Get kills!"
 			_mod.data_context.data.localPlayerWarningTextPadding = "5,5,5,5"
 		else
 			_mod.data_context.data.localPlayerWarningText = ""
