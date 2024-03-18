@@ -1,0 +1,1552 @@
+--------------------------------
+-- "If I have seen further than others, it is by standing on the shoulders of giants."
+--                                                           - Sir Isaac Newton
+--
+-- Not sure why you're even looking at this it's garbage.
+-- Big thanks to woprock, FoxDie, and the scripting discord for all the resources. Basically all this is cobbled
+-- together from there because I have no idea what I'm doing. Also thanks to KillerPigeon for the idea.
+-- Rasselbock
+-----------------------------------------------------------------------
+-- Imported Scripts
+-----------------------------------------------------------------------
+
+-- Import Utility Scripts
+import("cardinal.scar")							-- Contains sfx references, UI templates, and Civ/Age helper functions
+import("ScarUtil.scar")							-- Contains game helper functions
+
+-- Import Gameplay Systems
+import("gameplay/score.scar")					-- Tracks player score
+import("gameplay/diplomacy.scar")				-- Manages Tribute
+
+-- Import Win Conditions
+import("winconditions/annihilation.scar")		-- Support for eliminating a player when they can no longer fight or produce units
+import("winconditions/elimination.scar")		-- Support for player quitting or dropping (through pause menu or disconnection)
+import("winconditions/surrender.scar")			-- Support for player surrender (through pause menu)
+
+-- Import UI Support
+import("gameplay/chi/current_dynasty_ui.scar")	-- Displays Chinese Dynasty UI
+import("gameplay/event_cues.scar")
+import("gameplay/currentageui.scar")
+
+-----------------------------------------------------------------------
+-- Data
+-----------------------------------------------------------------------
+
+_mod = {
+	module = "MeatGrinder",
+	generic_objective_title = "$271509ac97504c168bbd6dcbef33a003:41",
+	generic_objective_desc = "$271509ac97504c168bbd6dcbef33a003:42",
+	icons = {
+		objective = "icons\\objectives\\objectives_leader",
+	},
+	initialTime,
+	incrementalTime,
+	buildings_count_as_kills,
+	double_starting_vils,
+	localTimerObjectiveForUI,
+	objectiveList,
+	objectiveType,
+	eliminatedPlayers,	
+	playerListByTeam = {},
+	totalObjectivePointsByPlayer = {},
+	localPlayer,
+	punishDelete,
+	resetPointsAtElim,
+	additionalResetPointsTime,
+	uiPlayersUsed,
+	revealOnElim,
+	ui = "ObserverObjectiveTable",
+	is_ui_created = false,
+	data_context = {
+		is_ui_visible = true,
+		is_dropdown_visible = false,
+		data = {
+			player1name = "",
+			player2name = "",
+			player3name = "",
+			player4name = "",
+			player5name = "",
+			player6name = "",
+			player7name = "",
+			player8name = "",
+			player1points = "",
+			player2points = "",
+			player3points = "",
+			player4points = "",
+			player5points = "",
+			player6points = "",
+			player7points = "",
+			player8points = "",
+			timerSecondsLeft = "0",
+			pointsText = "",
+		},
+	},
+}
+
+Core_RegisterModule(_mod.module)
+
+--------------------------------------------
+-- Initialization Functions
+--------------------------------------------
+
+function MeatGrinder_OnGameSetup()
+	options_selected = {}
+end
+
+function MeatGrinder_PreInit()
+	-- Enable Tribute UI
+	Core_CallDelegateFunctions("TributeEnabled", true)
+	Core_CallDelegateFunctions("DiplomacyEnabled", false)
+end
+
+function MeatGrinder_OnInit()
+	Setup_GetWinConditionOptions(options_selected)
+	
+	local optionInitialTime = options_selected.time_options.time_before_first_elim.enum_value
+	if optionInitialTime ==  options_selected.time_options.time_before_first_elim.enum_items.min5 then
+		_mod.initialTime = 5
+	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min10 then
+		_mod.initialTime = 10
+	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min15 then
+		_mod.initialTime = 15
+	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min20 then
+		_mod.initialTime = 20
+	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min25 then
+		_mod.initialTime = 25
+	elseif optionInitialTime == options_selected.time_options.time_before_first_elim.enum_items.min30 then
+		_mod.initialTime = 30
+	end
+	
+	local optionIncrementalTime = options_selected.time_options.time_between_elim.enum_value
+	if optionIncrementalTime ==  options_selected.time_options.time_between_elim.enum_items.min1 then
+		_mod.incrementalTime = 1
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min2 then
+		_mod.incrementalTime = 2
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min3 then
+		_mod.incrementalTime = 3
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min4 then
+		_mod.incrementalTime = 4
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min5 then
+		_mod.incrementalTime = 5
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min6 then
+		_mod.incrementalTime = 6
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min7 then
+		_mod.incrementalTime = 7
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min8 then
+		_mod.incrementalTime = 8
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min9 then
+		_mod.incrementalTime = 9
+	elseif optionIncrementalTime == options_selected.time_options.time_between_elim.enum_items.min10 then
+		_mod.incrementalTime = 10
+	end
+	
+	local selectedValueOption = options_selected.kill_tracking_option.kill_value_type.enum_value
+	if selectedValueOption == options_selected.kill_tracking_option.kill_value_type.enum_items.kills then
+		print("Kill objective selected")
+		_mod.objectiveType = 0
+	elseif selectedValueOption == options_selected.kill_tracking_option.kill_value_type.enum_items.unit_value then
+		print("Unit Value objective selected")
+		_mod.objectiveType = 1
+	elseif selectedValueOption == options_selected.kill_tracking_option.kill_value_type.enum_items.pop_value then
+		print("Unit Pop objective selected")
+		_mod.objectiveType = 2
+	else
+		print("NO VALID KILL TRACKING OPTION SELECTED!! DEFAULTING TO KILLS")
+		_mod.objectiveType = 0
+	end
+	
+	_mod.buildings_count_as_kills = options_selected.kill_tracking_option.buildings_count
+	--print("Buildings count? : ", _mod.buildings_count_as_kills)
+	
+	_mod.punishDelete = options_selected.kill_tracking_option.punish_delete
+	print("Punish delete: ", _mod.punishDelete)
+	
+	_mod.resetPointsAtElim = options_selected.time_options.reset_at_elim
+	--print("Reset points at elim: ", _mod.resetPointsAtElim)
+	
+	local selectedResetTime = options_selected.time_options.additional_point_reset.enum_value
+	if selectedResetTime ==  options_selected.time_options.additional_point_reset.enum_items.min0 then
+		_mod.additionalResetPointsTime = nil
+	elseif selectedResetTime == options_selected.time_options.additional_point_reset.enum_items.min5 then
+		_mod.additionalResetPointsTime = 5
+	elseif selectedResetTime == options_selected.time_options.additional_point_reset.enum_items.min10 then
+		_mod.additionalResetPointsTime = 10
+	elseif selectedResetTime == options_selected.time_options.additional_point_reset.enum_items.min15 then
+		_mod.additionalResetPointsTime = 15
+	elseif selectedResetTime == options_selected.time_options.additional_point_reset.enum_items.min20 then
+		_mod.additionalResetPointsTime = 20
+	end
+	
+	_mod.double_starting_vils = false
+	_mod.double_starting_vils = options_selected.other_options.double_vils
+	print("Double starting vils: ", _mod.double_starting_vils)
+	
+	_mod.revealOnElim = options_selected.other_options.reveal_on_elim
+	print("Reveal on elim: ", _mod.revealOnElim)
+	
+	-----------------------------
+	-- FOR DEBUG
+	_mod.initialTime = _mod.initialTime * 0.2
+	_mod.incrementalTime = _mod.incrementalTime * 0.2
+	-----------------------------
+	
+	if options_selected.victory_options.conquest_victory == true then		
+		import("winconditions/conquest.scar")	
+	end
+	
+	if options_selected.victory_options.religious_victory == true then		
+		import("winconditions/religious.scar")	
+	end
+	
+	if options_selected.victory_options.wonder_victory == true then		
+		import("winconditions/wonder.scar")	
+	end
+	
+	-- running this all the time now
+	----if UI_IsReplay() then
+		----print("Setting up observer UI")
+		----MeatGrinder_SetupObserverUI()
+	----end
+	
+	-- just allow it to run all the time?
+	MeatGrinder_SetupObserverUI()
+end
+
+function MeatGrinder_Start()
+	
+	_mod.localPlayer = Core_GetPlayersTableEntry(Game_GetLocalPlayer())
+	
+	-- add timer if we have an additional reset - including for UI
+	if _mod.additionalResetPointsTime ~= nil then
+		Rule_AddOneShot(MeatGrinder_ResetAllKillPoints, 60 * _mod.additionalResetPointsTime)
+	end
+	
+	Rule_AddGlobalEvent(EventCallOnEntityKilled, GE_EntityKilled)
+	Rule_AddGlobalEvent(EventCallOnPlayerKilled, GE_PlayerKilled)
+	Rule_AddInterval(MeatGrinder_UpdateUI, 1)
+	
+	MeatGrinder_SetupObjectiveUI()
+	
+	if _mod.double_starting_vils == true then
+		MeatGrinder_DoubleVillager()
+	end
+	
+	-- add first elim shot
+	Rule_AddOneShot(MeatGrinder_ElimLowestKillsPlayer, 60 * _mod.initialTime)
+	
+	-- setup warning message text
+	initialMessage = Loc_FormatText("$271509ac97504c168bbd6dcbef33a003:43", _mod.initialTime)
+	incrementMessage = Loc_FormatText("$271509ac97504c168bbd6dcbef33a003:44", _mod.incrementalTime)
+	timeWarningMessage = Loc_FormatText("$271509ac97504c168bbd6dcbef33a003:45")
+	
+	Rule_AddOneShot(MeatGrinder_ShowEventCue, 5, {message = initialMessage})
+	Rule_AddOneShot(MeatGrinder_ShowEventCue, (_mod.initialTime * 60)-60, {message = timeWarningMessage})
+	
+	for i = 0, 6 do
+		Rule_AddOneShot(MeatGrinder_ShowEventCue, 60 * _mod.initialTime + 5 + _mod.incrementalTime * 60 * i, {message = incrementMessage})
+		local warnTime = (60 * _mod.initialTime +  _mod.incrementalTime * 60 * (i+1))-60
+		Rule_AddOneShot(MeatGrinder_ShowEventCue, warnTime, {message = timeWarningMessage})
+	end
+end
+
+function MeatGrinder_OnGameOver()
+	
+	Rule_RemoveGlobalEvent(EventCallOnEntityKilled)
+	Rule_RemoveGlobalEvent(EventCallOnPlayerKilled)
+
+end
+
+-------------------------------------------------
+-- Helper Functions
+-------------------------------------------------
+
+function MeatGrinder_SetupObjectiveUI()
+	-- objective title
+	local obj = Obj_Create(_mod.localPlayer.id, _mod.generic_objective_title, _mod.generic_objective_desc, "icons\\races\\common\\victory_conditions\\victory_condition_conquest", "ConquestObjectiveTemplate", _mod.localPlayer.raceName, OT_Primary, 0, "conquestObj")
+	Obj_SetVisible(obj, true)
+	
+	-- setup timer objective line
+	if _mod.localTimerObjectiveForUI == nil then
+		
+		objective = {
+        Title = "$271509ac97504c168bbd6dcbef33a003:46",
+        Type = ObjectiveType_Optional,
+    	}
+		
+		Objective_Register(objective, _mod.localPlayer.id)
+		_mod.localTimerObjectiveForUI = objective
+		Objective_Start(objective, false, false)
+		Objective_StartTimer(objective, COUNT_DOWN, _mod.initialTime * 60, 1)
+	end
+	
+	-- Setup list of players and kills variables
+	
+	for i,player in pairs(PLAYERS) do
+		-- get player team id, if it's 10002 they aren't on a team
+		local playerTeamID = Player_GetTeam(player.id)
+		if playerTeamID >= 100 then -- no team selected
+			playerTeamID = player.id.PlayerID
+		end
+		-- if this team isn't in team list, add it
+		if _mod.playerListByTeam[tostring(playerTeamID)] == nil then
+			local newPList = {player.id}
+			_mod.playerListByTeam[tostring(playerTeamID)] = newPList
+		else
+			-- team already in team list, add player to existing team
+			local actualPList = _mod.playerListByTeam[tostring(playerTeamID)]
+			table.insert(actualPList, player.id)
+			_mod.playerListByTeam[tostring(playerTeamID)] =  actualPList
+		end
+		
+		_mod.totalObjectivePointsByPlayer[player.id.PlayerID] = 0
+	end
+	
+	MeatGrinder_UpdatePlayerObjectiveList()
+end
+
+function MeatGrinder_UpdatePlayerObjectiveList()
+	
+	-- clear current objectives
+	if _mod.objectiveList ~= nil then
+		if next(_mod.objectiveList) ~= nil then
+			--print("have objectives currently, clearing them")
+			for i,thisObj in pairs(_mod.objectiveList) do
+				Obj_Delete(_mod.objectiveList[i])
+			end
+		end
+	end
+	
+	_mod.objectiveList = {}
+	
+	local lastPlayer = nil
+	local playersUsed = {}
+	--print("Number of players: ", #PLAYERS)
+	for i=1, #PLAYERS do
+		-- loop through list and grab largest number until all players have been grabbed
+		local maxPoints = 0
+		local nextPlayerToAddToList = nil
+		
+		-- loop through all players and grab the highest score that isn't in the playersUsed list
+		for j,player in pairs(PLAYERS) do
+			
+			-- reset player's points if they are eliminated
+			if player.isEliminated then
+				_mod.totalObjectivePointsByPlayer[player.id.PlayerID] = 0
+			end
+						
+			if playersUsed[player.id.PlayerID] == nil and player.isEliminated == false then
+				
+				thisPlayersPoints = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+				
+				if thisPlayersPoints >= maxPoints then
+					nextPlayerToAddToList = player
+					maxPoints = thisPlayersPoints
+				end
+			end
+		end
+		
+		if nextPlayerToAddToList == nil then
+			--print("iterations completed: ", i, " and I think out of valid players to add?")
+			-- hit this point when players start being eliminated since we are using the number of total players at start rather than alive players
+			--Obj_SetColour(_mod.objectiveList[lastPlayer.id.PlayerID], 255, 0, 0, 150) -- doesn't seem to work
+			break
+		end
+		
+		local displayed_obj = Loc_FormatText("$271509ac97504c168bbd6dcbef33a003:47", nextPlayerToAddToList.playerName)
+		_mod.objectiveList[nextPlayerToAddToList.id.PlayerID] = Obj_Create(nextPlayerToAddToList.id, displayed_obj, _mod.generic_objective_desc, "icons\\races\\common\\victory_conditions\\victory_condition_conquest", "ConquestObjectiveTemplate", nextPlayerToAddToList.raceName, OT_Primary, 0, "conquestObj")
+		
+		Obj_SetState(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], OS_Incomplete)
+		Obj_SetVisible(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], true)
+		Obj_SetCounterType(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], COUNTER_Count)
+		Obj_SetCounterCount(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], _mod.totalObjectivePointsByPlayer[nextPlayerToAddToList.id.PlayerID])
+
+		lastPlayer = nextPlayerToAddToList
+		playersUsed[nextPlayerToAddToList.id.PlayerID] = 0
+	end
+	
+	-- TODO: set player with lowest kills objective color to red?
+	-- can grab last player by keeping track of previous player checked then when we hit the nil nextPlayer can set the lastPlayer to red. Need to check for ties too.
+end
+
+function MeatGrinder_DoubleVillager()
+	-- double starting villagers
+	for _, player in pairs(PLAYERS) do	
+		
+		local sgroup = Player_GetSquadsFromType(player.id, "villager")
+		local sbp_vil = BP_GetSquadBlueprint(AGS_ENTITY_TABLE[player.raceName]["villager"])
+		local snameVIL = "sg_player_" .. "villager" .. "_" .. tostring(player_id)
+		local start_adjusted_pos = Player_GetStartingPosition(player.id) -- MIGHT NEED TO ADJUST FOR NOMAD
+		AGS_SpawnSquad(player.id, snameVIL, sbp_vil, start_adjusted_pos, World_Pos(0, 0, -10), SGroup_CountSpawned(sgroup))	
+	end
+	
+	-- original AGS method
+	--for _, player in pairs(PLAYERS) do	
+		--local villager_count = 6
+		---- Adjust count to a new value.		
+		--local sgroup = Player_GetSquadsFromType(player.id, "villager")
+		--villager_count = villager_count - SGroup_CountSpawned(sgroup)
+		--if villager_count > 0 then
+			--local sbp_vil = BP_GetSquadBlueprint(AGS_ENTITY_TABLE[player.raceName]["villager"])
+			--local snameVIL = "sg_player_" .. "villager" .. "_" .. tostring(player_id)
+			--local start_adjusted_pos = Player_GetStartingPosition(player.id) -- MIGHT NEED TO ADJUST FOR NOMAD
+			--AGS_SpawnSquad(player.id, snameVIL, sbp_vil, start_adjusted_pos, World_Pos(0, 0, -10), villager_count)
+		--elseif villager_count < 0 then 
+			---- Desired number was lower, we will eliminate few villagers.
+			--local idx = 1
+			--while(villager_count < 0) do
+				--local soon_dead = SGroup_GetSquadAt(sgroup, idx)
+				--Squad_Destroy(soon_dead)
+				--villager_count = villager_count + 1
+				--idx = idx + 1
+			--end
+		--end		
+	--end
+end
+
+function MeatGrinder_ResetAllKillPoints()
+	
+	for i,player in pairs(PLAYERS) do		
+		_mod.totalObjectivePointsByPlayer[player.id.PlayerID] = 0
+	end
+	
+	if UI_IsReplay() then
+		MeatGrinder_UpdateUI()
+	end
+	
+	-- FOR DEBUG
+	MeatGrinder_UpdateUI()
+	
+	-- update UI to show new reset
+	MeatGrinder_UpdatePlayerObjectiveList()
+end
+
+function EventCallOnEntityKilled(context)
+	
+	if context == nil or context.killer == nil or context.victim == nil then
+		return
+	end
+	
+	if Entity_IsOfType(context.victim, "animal") then
+		--print("Animal killed. Doesn't count.")
+		return
+	end
+	if context.killer.EntityID == context.victim.EntityID then
+		print("Killer killed themselves.")
+		if _mod.punishDelete then
+			print("Punishing deletion.")
+			local buildingModifier = 1
+			if World_OwnsEntity(context.killer) then
+				print("World killed???")
+				--maybe return here if the world DOESN'T own since it should own deleted unit apparently
+			end	
+			
+			-- covers units of eliminated players
+			if context["victimOwner"] == nil then
+				print("victim owner is nil")
+				return
+			end
+			
+			if Entity_IsBuilding(context.victim) and _mod.buildings_count_as_kills == false then
+				return
+			end
+			
+			local player = nil
+			
+			if Entity_IsBuilding(context.victim) then
+				player = context.victimOwner
+				if player == nil then 
+					return
+				end
+				buildingModifier = 0.5
+			else
+				player = Squad_GetPlayerOwner(context.victimSquad)
+				if player == nil then 
+					print("No player found.")
+					return
+				end
+			end
+				
+			local owner = Core_GetPlayersTableEntry(player)
+			if owner == nil then 
+				print("no owner found")
+				return
+			end
+			
+			if _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] == nil then 
+				return
+			end
+			
+			local cost = getSelfCost(context.victim, context.victimOwner)
+			local victimBP = Entity_GetBlueprint(context.victim)
+			local victimPop =  EBP_PopulationCost(victimBP, context.victimOwner, CT_Personnel)
+			
+			-- unit kills
+			if _mod.objectiveType == 0 then
+				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] - 1
+			end
+			
+			-- unit value
+			if _mod.objectiveType == 1 then
+				-- could do a check here for outlier bugs like JD costing 50
+				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] - math.ceil(cost * buildingModifier)
+			end
+			
+			-- unit population
+			if _mod.objectiveType == 2 then
+				if Entity_IsBuilding(context.victim) then
+					victimPop = 1
+				end
+				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] - math.ceil(victimPop * buildingModifier)
+			end
+			
+			if _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] < 0 then
+				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = 0
+			end
+			
+			Obj_SetCounterCount(_mod.objectiveList[owner.id.PlayerID], _mod.totalObjectivePointsByPlayer[owner.id.PlayerID])
+			-- update kills tracker UI
+			MeatGrinder_UpdatePlayerObjectiveList()
+		end
+		return
+	end
+
+	if World_OwnsEntity(context.killer) then
+		--print("World killed. Doesnt count.")
+		return
+	end	
+	
+	-- covers units of eliminated players
+	if context["victimOwner"] == nil then
+		--print("victim owner is nil")
+		return
+	end
+	
+	if Entity_IsBuilding(context.victim) and _mod.buildings_count_as_kills == false then
+		return
+	end
+	
+	local player = Entity_GetPlayerOwner(context.killer)
+	if player == nil then 
+		return
+	end
+		
+	local owner = Core_GetPlayersTableEntry(player)
+	if owner == nil then 
+		return
+	end
+	
+	if _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] == nil then 
+		return
+	end
+	
+	local cost = getSelfCost(context.victim, context.victimOwner)
+	local victimBP = Entity_GetBlueprint(context.victim)
+	local victimPop =  EBP_PopulationCost(victimBP, context.victimOwner, CT_Personnel)
+	
+	-- add points based on game settings
+	
+	-- unit kills
+	if _mod.objectiveType == 0 then
+		_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] + 1
+	end
+	
+	-- unit value
+	if _mod.objectiveType == 1 then
+		-- could do a check here for outlier bugs like JD costing 50
+		-- do buildings work?
+		_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] + cost
+	end
+	
+	-- unit population (buildings don't have population - give 1 point for buildings if turned on?)
+	if _mod.objectiveType == 2 then
+		if Entity_IsBuilding(context.victim) then
+			-- could use building value and some sort of value like every 300 cost is worth a point
+			victimPop = 1
+		end
+		_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] + victimPop
+	end
+	
+	Obj_SetCounterCount(_mod.objectiveList[owner.id.PlayerID], _mod.totalObjectivePointsByPlayer[owner.id.PlayerID])
+	
+	-- update kills tracker UI
+	MeatGrinder_UpdatePlayerObjectiveList()
+end
+
+function EventCallOnPlayerKilled(context)
+	
+	-- check if timer is less than half the interval timer - track the current timer ID with _mod.timerID
+	-- if it is less than half and the option to extend is there, reset timer and add a new one
+	-- Rule_RemoveWithID()
+	
+	-- update UI when player leaves
+	MeatGrinder_UpdatePlayerObjectiveList()
+	
+	if UI_IsReplay() then
+		MeatGrinder_UpdateUI()
+	end
+	
+	if context.player.PlayerID == _mod.localPlayer.id.PlayerID then
+		if _mod.revealOnElim then
+			FOW_UIRevealAll()
+		end
+	end
+end
+
+function MeatGrinder_ElimLowestKillsPlayer()
+	
+	-- below from example kills mod -- 
+	print("Killing lowest players.")
+	
+	---- if game already ended, return
+	if World_IsGameOver() == true then
+		print("game is over, returning from killing lowest player")
+		return
+	end
+	
+	-- add up total kills by team
+	local totalKillsByTeam = {}
+	for i,player in pairs(PLAYERS) do
+		local aTeam = Player_GetTeam(player.id)
+		local idInList = aTeam
+		if aTeam >= 100 then -- no team selected
+			idInList = player.id.PlayerID
+		end
+		-- add up all kills by each team member into kills by team
+		if totalKillsByTeam[tostring(idInList)] == nil then
+			totalKillsByTeam[tostring(idInList)] = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+		else
+			totalKillsByTeam[tostring(idInList)] = totalKillsByTeam[tostring(idInList)] + _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+		end
+	end
+	
+	-- get team with least kills
+	local minTeamKills = math.huge
+	local losingTeams = {}
+	for teamName,kills in pairs(totalKillsByTeam) do 
+		if kills < minTeamKills  then
+			-- start with the assumption that all players are already defeated and mark the ones that aren't so we don't eliminate dead players
+			local teamIsDeafeated = true
+			-- check if team is already defeated because all players on team are defeated
+			for j,player in pairs(_mod.playerListByTeam[teamName]) do
+				if Core_IsPlayerEliminated(player) == false then
+					teamIsDeafeated = false
+				end
+			end
+			-- if entire team is not defeated, this is new team with lowest kills
+			if teamIsDeafeated == false then
+				losingTeams = {} -- clear losingTeams list because we found new lowest
+				minTeamKills = kills
+				losingTeams[teamName] = 1
+			end
+		elseif kills == minTeamKills then
+			-- repeat same checks above but just adding to list of losers
+			local teamIsDeafeated = true
+			for j,player in pairs(_mod.playerListByTeam[teamName]) do
+				if Core_IsPlayerEliminated(player) == false then
+					teamIsDeafeated = false
+				end
+			end
+			if teamIsDeafeated == false then
+				minTeamKills = kills
+				losingTeams[teamName] = 1
+			end
+		end
+	end
+	
+	-- loop through all teams and eliminate team that is losingTeam
+	for team,pList in pairs(_mod.playerListByTeam) do 
+		if losingTeams[team] ~= nil then
+			
+			for j,playerDefeated in pairs(_mod.playerListByTeam[team]) do
+				
+				Core_SetPlayerDefeated(playerDefeated, Annihilation_LoserPresentation, WR_ANNIHILATION)
+				
+				-- elim message not working right now :(
+				--local elimMessage = Loc_FormatText("$5f1b3b821ca6400da3c9c36c7e65484b:51", playerDefeated.playerName)
+				--MeatGrinder_ShowEventCue(nil, {elimMessage})
+			end
+		end
+	end
+	
+	-- add another oneshot call to elim players again
+	Rule_AddOneShot(MeatGrinder_ElimLowestKillsPlayer, 60 * _mod.incrementalTime)
+	
+	-- reset timer objective
+	Objective_Expire(_mod.localTimerObjectiveForUI, false, false)
+	
+	objective = {
+        Title = "$271509ac97504c168bbd6dcbef33a003:46",
+        Type = ObjectiveType_Optional,
+	}
+		
+	Objective_Register(objective, _mod.localPlayer.id)
+	_mod.localTimerObjectiveForUI = objective
+	Objective_Start(objective, false, false)
+	Objective_StartTimer(objective, COUNT_DOWN, _mod.incrementalTime * 60, 1)
+	
+	if _mod.resetPointsAtElim ==  true then
+		print("Reseting all players points at elim.")
+		MeatGrinder_ResetAllKillPoints()
+		return
+	end
+	
+	Music_UnlockIntensity()
+	ResetMinimumIntensityMusicUnforced()
+	Sound_Play2D("mus_shared_victory_countdown_mix_event_reset")
+	
+	--if UI_IsReplay() then
+		---- show eventCue that a player is being eliminated
+		
+	--end
+	
+	-- update list so if a player that was eliminated wasn't at the bottom they are re-sorted
+	MeatGrinder_UpdatePlayerObjectiveList()
+end
+
+function MeatGrinder_ShowEventCue(context, data)
+	UI_CreateEventCue(data.message, nil, "", "", "sfx_ui_event_queue_high_priority_play")
+end
+
+-- compute the selfcost of e, p can be nil if e is not dead 
+function getSelfCost(e, p)
+	if p == nil then 
+		if World_OwnsEntity(e) then 
+			return 1.0
+		else
+			p = Entity_GetPlayerOwner(e)
+		end
+	end
+	local costlist = Player_GetEntityBPCost(p, Entity_GetBlueprint(e))
+	local cost = 0.0
+	if type(costlist["wood"]) == "number" then 
+		cost = cost + costlist.wood
+	end
+	if type(costlist["food"]) == "number" then 
+		cost = cost + costlist.food
+	end
+	if type(costlist["stone"]) == "number" then 
+		cost = cost + costlist.stone
+	end
+	if type(costlist["gold"]) == "number" then 
+		cost = cost + costlist.gold
+	end
+	if type(costlist["merc_byz"]) == "number" then 
+		cost = cost + costlist.merc_byz * 2
+	end
+	if cost < 50 then 
+		return 50.0
+	else
+		return cost
+	end
+end
+
+function showHideMessage(context, data)
+	if data.show == true then
+		--print("Showing message.")
+		UI_SystemMessageShow(data.message)
+	else
+		--print("Hiding message.")
+		UI_SystemMessageHide(data.message)
+	end
+end
+
+function MeatGrinder_SetupObserverUI()
+	
+	if _mod.is_ui_created == false then
+		
+		if _mod.objectiveType == 0 then
+			_mod.data_context.data.pointsText = "Kills"
+		elseif _mod.objectiveType == 1 then
+			_mod.data_context.data.pointsText = "Kills Value"
+		elseif _mod.objectiveType == 2 then
+			_mod.data_context.data.pointsText = "Kills Pop"
+		end
+		
+		local xaml
+		-- for debug just write "not" in front of UI_IsReplay()
+		if UI_IsReplay() then
+			-- original working xaml
+			xaml = [[
+					<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+						xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
+						xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
+						xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
+						HorizontalAlignment="Left" 
+						VerticalAlignment="Bottom" 
+						SnapsToDevicePixels="True"
+						IsHitTestVisible="False"
+						Margin="20,20,20,500"
+						Width="250">
+						<Grid.Resources>
+							<ResourceDictionary.MergedDictionaries>
+								<ResourceDictionary Source="pack://application:,,,ui/Resources/HUDResources.xaml" />
+							</ResourceDictionary.MergedDictionaries>
+						</Grid.Resources>
+					      <Grid.ColumnDefinitions>
+					        <ColumnDefinition />
+					        <ColumnDefinition />
+					      </Grid.ColumnDefinitions>
+					      <Grid.RowDefinitions>
+					        <RowDefinition />
+					        <RowDefinition />
+					        <RowDefinition />
+					        <RowDefinition />
+					        <RowDefinition />
+					        <RowDefinition />
+					        <RowDefinition />
+					        <RowDefinition />
+					        <RowDefinition />
+					        <RowDefinition />
+					      </Grid.RowDefinitions>
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="0" Text="{Binding [data][player3name]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0" Text="{Binding [data][player4name]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="0" Text="{Binding [data][player5name]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0" Text="{Binding [data][player6name]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="0" Text="{Binding [data][player7name]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0" Text="{Binding [data][player8name]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
+					  </Grid>
+					]]
+		else
+			-- player xaml ui for red border when about to be eliminated - not really working yet
+			xaml = [[
+				<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+						xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
+						xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
+						xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
+						WindowState="Maximized"
+						SnapsToDevicePixels="True"
+						IsHitTestVisible="False">
+						<Grid
+							HorizontalAlignment="Center"
+							VerticalAlignment="Top"
+							Margin="0,150,0,0">
+							<TextBlock Text=""/>
+						</Grid>
+			    </Border>
+				]]
+		end
+		
+		
+		-- test xaml for background gradient
+			--xaml = [[
+				--<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+						--xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+						--xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
+						--xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
+						--xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
+						--HorizontalAlignment="Left" 
+						--VerticalAlignment="Bottom" 
+						--SnapsToDevicePixels="True"
+						--IsHitTestVisible="False"
+						--Margin="20,20,20,500"
+						--Width="250"
+						--BorderThickness="5" 
+						--BorderBrush="Blue">
+			        --<Border.Background>
+			            --<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+			                --<GradientStop Color="Blue" Offset="0"/>
+			                --<GradientStop Color="Transparent" Offset="1"/>
+			            --</LinearGradientBrush>
+			        --</Border.Background>
+			        --<Grid>
+						--<Grid.Resources>
+							--<ResourceDictionary.MergedDictionaries>
+								--<ResourceDictionary Source="pack://application:,,,ui/Resources/HUDResources.xaml" />
+							--</ResourceDictionary.MergedDictionaries>
+						--</Grid.Resources>
+					      --<Grid.ColumnDefinitions>
+					        --<ColumnDefinition />
+					        --<ColumnDefinition />
+					      --</Grid.ColumnDefinitions>
+					      --<Grid.RowDefinitions>
+					        --<RowDefinition />
+					        --<RowDefinition />
+					        --<RowDefinition />
+					        --<RowDefinition />
+					        --<RowDefinition />
+					        --<RowDefinition />
+					        --<RowDefinition />
+					        --<RowDefinition />
+					        --<RowDefinition />
+					        --<RowDefinition />
+					      --</Grid.RowDefinitions>
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="0" Text="{Binding [data][player3name]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0" Text="{Binding [data][player4name]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="0" Text="{Binding [data][player5name]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0" Text="{Binding [data][player6name]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="0" Text="{Binding [data][player7name]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0" Text="{Binding [data][player8name]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
+					      --<TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
+			        --</Grid>
+			    --</Border>
+				--]]
+		
+		--print("Adding observer UI")
+		UI_AddChild("ScarDefault", "XamlPresenter", _mod.ui, { IsHitTestVisible = true, Xaml = xaml, DataContext = UI_CreateDataContext(_mod.data_context) })
+		_mod.is_ui_created = true
+	end
+end
+
+function MeatGrinder_UpdateUI()		 			
+	if _mod ~= nil and _mod.data_context ~= nil then 
+		MeatGrinder_UpdateObserverVars()
+	end
+	
+	if _mod.is_ui_created then 
+		UI_SetDataContext(_mod.ui, _mod.data_context)	
+	end
+end
+
+function MeatGrinder_UpdateObserverVars()
+	
+	local secondsLeft = Objective_GetTimerSeconds(_mod.localTimerObjectiveForUI)
+	local minutesLeft = secondsLeft // 60
+	local secondsLeftDecimal = (secondsLeft - (minutesLeft * 60)) // 1
+	_mod.data_context.data.timerSecondsLeft = string.format("%02d:%02d", minutesLeft, secondsLeftDecimal) 
+	
+	_mod.uiPlayersUsed = {}
+	
+	-- lol find a way to make this into a for loop with dynamic variable names
+	-- consider checking if player is dead and changing string to "X-X" or even leaving them off the table by setting name and score to ""
+	
+	for i=1, #PLAYERS do
+		local player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+		if player == nil then
+			return
+		end
+		
+		-- set eliminated players to empty to pull them off the list
+		if player.isEliminated() then 
+			_mod.data_context.data["player" .. i .. "name"] = ""
+			_mod.data_context.data["player" .. i .. "points"] = "" 
+			return
+		end
+		
+		local points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+		_mod.data_context.data["player" .. i .. "name"] = Loc_FormatText(player.playerName)
+		_mod.data_context.data["player" .. i .. "points"] = string.format("%00d", points)
+	end
+	
+	--local player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+	--if player == nil then
+		--return
+	--end
+	--local points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+	--_mod.data_context.data.player1name = Loc_FormatText(player.playerName)
+	--_mod.data_context.data.player1points = string.format("%00d", points)
+	
+	--player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+	--if player == nil then
+		--return
+	--end
+	--points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+	--_mod.data_context.data.player2name = Loc_FormatText(player.playerName)
+	--_mod.data_context.data.player2points = string.format("%00d", points)
+	
+	--player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+	--if player == nil then
+		--return
+	--end
+	--points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+	--_mod.data_context.data.player3name = Loc_FormatText(player.playerName)
+	--_mod.data_context.data.player3points = string.format("%00d", points)
+	
+	--player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+	--if player == nil then
+		--return
+	--end
+	--points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+	--_mod.data_context.data.player4name = Loc_FormatText(player.playerName)
+	--_mod.data_context.data.player4points = string.format("%00d", points)
+	
+	--player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+	--if player == nil then
+		--return
+	--end
+	--points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+	--_mod.data_context.data.player5name = Loc_FormatText(player.playerName)
+	--_mod.data_context.data.player5points = string.format("%00d", points)
+	
+	--player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+	--if player == nil then
+		--return
+	--end
+	--points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+	--_mod.data_context.data.player6name = Loc_FormatText(player.playerName)
+	--_mod.data_context.data.player6points = string.format("%00d", points)
+	
+	--player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+	--if player == nil then
+		--return
+	--end
+	--points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+	--_mod.data_context.data.player7name = Loc_FormatText(player.playerName)
+	--_mod.data_context.data.player7points = string.format("%00d", points)
+	
+	--player = MeatGrinder_GetHighestUnusedPlayerForObserver()
+	--if player == nil then
+		--return
+	--end
+	--points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+	--_mod.data_context.data.player8name = Loc_FormatText(player.playerName)
+	--_mod.data_context.data.player8points = string.format("%00d", points)
+	
+	
+end
+
+function MeatGrinder_GetHighestUnusedPlayerForObserver()
+	
+    -- loop through list and grab largest number that hasn't been used already
+	local maxPoints = 0
+	local highestPlayer = nil
+	
+	-- loop through all players and grab the highest score that isn't in the playersUsed list
+	for j,player in pairs(PLAYERS) do
+		
+		if _mod.uiPlayersUsed[player.id.PlayerID] == nil then
+			
+			thisPlayersPoints = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+			
+			if thisPlayersPoints >= maxPoints then
+				highestPlayer = player
+				maxPoints = thisPlayersPoints
+			end
+		end
+	end
+	
+	if highestPlayer == nil then
+		return nil
+	end
+	
+	_mod.uiPlayersUsed[highestPlayer.id.PlayerID] = 0
+	
+	return highestPlayer
+end
+
+AGS_ENTITY_TABLE = {
+	neutral = {
+		sheep = "gaia_herdable_sheep",
+		resource_pickup_food = "resource_pickup_food",
+		resource_pickup_wood = "resource_pickup_wood",
+		resource_pickup_gold = "resource_pickup_gold",
+		resource_pickup_stone = "resource_pickup_stone",
+		relic = "relic",
+		special_beacon = "holy_site",
+	},
+	english = {
+		castle = "building_defense_keep_eng",
+		town_center_capital = "building_town_center_capital_eng",
+		town_center = "building_town_center_eng",
+		town_center_landmark = "building_landmark_age2_westminster_palace_eng",
+		scar_market = "building_econ_market_control_eng",
+		villager = "unit_villager_1_eng",
+		scout = "unit_scout_1_eng",
+		king = "unit_king_1_eng",
+		palisade_wall = "building_defense_palisade_eng",
+		palisade_gate = "building_defense_palisade_gate_eng",
+		monk = "unit_monk_3_eng",
+		monastery = "building_unit_religious_control_eng",
+		barracks = "building_unit_infantry_control_eng",
+		stable = "building_unit_cavalry_control_eng",
+		archery_range = "building_unit_ranged_control_eng",
+		siege_workshop = "building_unit_siege_control_eng",
+		scar_dock = "building_unit_naval_eng",		
+		house = "building_house_control_eng",
+		blacksmith = "building_tech_unit_infantry_control_eng",
+		outpost = "building_defense_outpost_eng",
+		wonder_dark_age = "building_landmark_age1_westminster_hall_eng",
+		wonder_feudal_age = "building_landmark_age2_white_tower_eng",
+		wonder_castle_age = "building_landmark_age3_whitehall_palace_eng",
+		wonder_dark_age_alternative = "building_landmark_age1_westminster_abbey_eng",
+		wonder_feudal_age_alternative = "building_landmark_age2_westminster_palace_eng",
+		wonder_castle_age_alternative = "building_landmark_age3_windsor_castle_eng",
+		stone_wall = "building_defense_wall_eng",
+		stone_gate = "building_defense_wall_gate_eng",
+	},
+	chinese = {
+		castle = "building_defense_keep_chi",
+		town_center_capital = "building_town_center_capital_chi",
+		town_center = "building_town_center_chi",
+		scar_market = "building_econ_market_control_chi",
+		villager = "unit_villager_1_chi",
+		official = "unit_official_1_chi",
+		scout = "unit_scout_1_chi",
+		king = "unit_king_1_chi",	
+		palisade_wall = "building_defense_palisade_chi",
+		palisade_gate = "building_defense_palisade_gate_chi",
+		monk = "unit_monk_3_chi",
+		monastery = "building_unit_religious_control_chi",
+		barracks = "building_unit_infantry_control_chi",
+		stable = "building_unit_cavalry_control_chi",
+		archery_range = "building_unit_ranged_control_chi",
+		siege_workshop = "building_unit_siege_control_chi",
+		scar_dock = "building_unit_naval_chi",	
+		house = "building_house_control_chi",	
+		blacksmith = "building_tech_unit_infantry_control_chi",	
+		outpost = "building_defense_outpost_chi",
+		wonder_dark_age = "building_landmark_age1_gatehouse_control_chi",
+		wonder_feudal_age = "building_landmark_age2_clocktower_control_chi",
+		wonder_castle_age = "building_landmark_age3_spirit_way_control_chi",
+		wonder_dark_age_alternative = "building_landmark_age1_academy_control_chi",
+		wonder_feudal_age_alternative = "building_landmark_age2_palace_control_chi",
+		wonder_castle_age_alternative = "building_landmark_age3_great_wall_control_chi",
+		stone_wall = "building_defense_wall_chi",
+		stone_gate = "building_defense_wall_gate_chi",
+	},
+	french = {
+		castle = "building_defense_keep_fre",
+		town_center_capital = "building_town_center_capital_fre",
+		town_center = "building_town_center_fre",
+		scar_market = "building_econ_market_control_fre",
+		villager = "unit_villager_1_fre",
+		scout = "unit_scout_1_fre",
+		king = "unit_king_1_fre",
+		palisade_wall = "building_defense_palisade_fre",
+		palisade_gate = "building_defense_palisade_gate_fre",
+		monk = "unit_monk_3_fre",
+		monastery = "building_unit_religious_control_fre",
+		barracks = "building_unit_infantry_control_fre",
+		stable = "building_unit_cavalry_control_fre",
+		archery_range = "building_unit_ranged_control_fre",
+		siege_workshop = "building_unit_siege_control_fre",
+		scar_dock = "building_unit_naval_fre",	
+		house = "building_house_control_fre",	
+		blacksmith = "building_tech_unit_infantry_control_fre",
+		outpost = "building_defense_outpost_fre",
+		wonder_dark_age = "building_landmark_age1_casernes_centrales_fre",
+		wonder_feudal_age = "building_landmark_age2_la_chateau_rouge_fre",
+		wonder_castle_age = "building_landmark_age3_le_grande_university_fre",
+		wonder_dark_age_alternative = "building_landmark_age1_chamber_of_commerce_fre",
+		wonder_feudal_age_alternative = "building_landmark_age2_guild_hall_fre",
+		wonder_castle_age_alternative = "building_landmark_age3_ecole_de_poudre_a_canon_fre",
+		stone_wall = "building_defense_wall_fre",
+		stone_gate = "building_defense_wall_gate_fre",
+	},
+	french_ha_01 = {
+		castle = "building_defense_keep_fre_ha_01",
+		town_center_capital = "building_town_center_capital_fre_ha_01",
+		town_center = "building_town_center_fre_ha_01",
+		scar_market = "building_econ_market_control_fre_ha_01",
+		villager = "unit_villager_1_fre_ha_01",
+		jeanne = "unit_jeanne_d_arc_1_fre_ha_01",
+		scout = "unit_scout_1_fre_ha_01",
+		king = "unit_king_1_fre_ha_01",
+		palisade_wall = "building_defense_palisade_fre_ha_01",
+		palisade_gate = "building_defense_palisade_gate_fre_ha_01",
+		monk = "unit_monk_3_fre_ha_01",
+		monastery = "building_unit_religious_control_fre_ha_01",
+		barracks = "building_unit_infantry_control_fre_ha_01",
+		stable = "building_unit_cavalry_control_fre_ha_01",
+		archery_range = "building_unit_ranged_control_fre_ha_01",
+		siege_workshop = "building_unit_siege_control_fre_ha_01",
+		scar_dock = "building_unit_naval_fre_ha_01",	
+		house = "building_house_control_fre_ha_01",	
+		blacksmith = "building_tech_unit_infantry_control_fre_ha_01",
+		outpost = "building_defense_outpost_fre_ha_01",
+		wonder_dark_age = "building_landmark_age1_casernes_centrales_fre_ha_01",
+		wonder_feudal_age = "building_landmark_age2_la_chateau_rouge_fre_ha_01",
+		wonder_castle_age = "building_landmark_age3_le_grande_university_fre_ha_01",
+		wonder_dark_age_alternative = "building_landmark_age1_chamber_of_commerce_fre_ha_01",
+		wonder_feudal_age_alternative = "building_landmark_age2_guild_hall_fre_ha_01",
+		wonder_castle_age_alternative = "building_landmark_age3_ecole_de_poudre_a_canon_fre_ha_01",
+		stone_wall = "building_defense_wall_fre_ha_01",
+		stone_gate = "building_defense_wall_gate_fre_ha_01",
+	},
+	hre = {
+		castle = "building_defense_keep_hre",
+		town_center_capital = "building_town_center_capital_hre",
+		town_center = "building_town_center_hre",
+		town_center_landmark = "building_landmark_age3_hohenzollern_castle_hre",
+		scar_market = "building_econ_market_control_hre",
+		villager = "unit_villager_1_hre",
+		scout = "unit_scout_1_hre",
+		king = "unit_king_1_hre",
+		palisade_wall = "building_defense_palisade_hre",
+		palisade_gate = "building_defense_palisade_gate_hre",
+		monk = "unit_monk_1_hre",
+		monastery = "building_unit_religious_control_hre",
+		barracks = "building_unit_infantry_control_hre",
+		stable = "building_unit_cavalry_control_hre",
+		archery_range = "building_unit_ranged_control_hre",
+		siege_workshop = "building_unit_siege_control_hre",
+		scar_dock = "building_unit_naval_hre",	
+		house = "building_house_control_hre",
+		blacksmith = "building_tech_unit_infantry_control_hre",	
+		outpost = "building_defense_outpost_hre",
+		wonder_dark_age = "building_landmark_age1_palantine_chapel_hre",
+		wonder_feudal_age = "building_landmark_age2_nuremberg_castle_hre",
+		wonder_castle_age = "building_landmark_age3_eltz_castle_hre",
+		wonder_dark_age_alternative = "building_landmark_age1_imperial_palace_of_paderborn_hre",
+		wonder_feudal_age_alternative = "building_landmark_age2_bamberg_cathedral_hre",
+		wonder_castle_age_alternative = "building_landmark_age3_hohenzollern_castle_hre",
+		stone_wall = "building_defense_wall_hre",
+		stone_gate = "building_defense_wall_gate_hre",
+	},
+	hre_ha_01 = {
+		castle = "building_defense_keep_hre_ha_01",
+		town_center_capital = "building_town_center_capital_hre_ha_01",
+		town_center = "building_town_center_hre_ha_01",
+		town_center_landmark = "building_landmark_age3_hohenzollern_castle_hre_ha_01",
+		scar_market = "building_econ_market_control_hre_ha_01",
+		villager = "unit_villager_1_hre_ha_01",
+		scout = "unit_scout_1_hre_ha_01",
+		king = "unit_king_1_hre_ha_01",
+		palisade_wall = "building_defense_palisade_hre_ha_01",
+		palisade_gate = "building_defense_palisade_gate_hre_ha_01",
+		monk = "unit_monk_1_hre_ha_01",
+		monastery = "building_unit_religious_control_hre_ha_01",
+		barracks = "building_unit_infantry_control_hre_ha_01",
+		stable = "building_unit_cavalry_control_hre_ha_01",
+		archery_range = "building_unit_ranged_control_hre_ha_01",
+		siege_workshop = "building_unit_siege_control_hre_ha_01",
+		scar_dock = "building_unit_naval_hre_ha_01",	
+		house = "building_house_control_hre_ha_01",
+		blacksmith = "building_tech_unit_infantry_control_hre_ha_01",	
+		outpost = "building_defense_outpost_hre_ha_01",
+		wonder_dark_age = "building_landmark_age1_palantine_chapel_hre_ha_01",
+		wonder_feudal_age = "building_landmark_age2_nuremberg_castle_hre_ha_01",
+		wonder_castle_age = "building_landmark_age3_eltz_castle_hre_ha_01",
+		wonder_dark_age_alternative = "building_landmark_age1_imperial_palace_of_paderborn_hre_ha_01",
+		wonder_feudal_age_alternative = "building_landmark_age2_bamberg_cathedral_hre_ha_01",
+		wonder_castle_age_alternative = "building_landmark_age3_hohenzollern_castle_hre_ha_01",
+		stone_wall = "building_defense_wall_hre_ha_01",
+		stone_gate = "building_defense_wall_gate_hre_ha_01",
+	},
+	rus = {	
+		castle = "building_defense_keep_control_rus",
+		town_center_capital = "building_town_center_capital_rus",
+		town_center = "building_town_center_rus",
+		scar_market = "building_econ_market_control_rus",
+		villager = "unit_villager_1_rus",
+		scout = "unit_scout_1_rus",
+		king = "unit_king_1_rus",
+		palisade_wall = "building_defense_palisade_rus",
+		palisade_gate = "building_defense_palisade_gate_rus",
+		monk = "unit_monk_3_rus",
+		monastery = "building_unit_religious_control_rus",
+		barracks = "building_unit_infantry_control_rus",
+		stable = "building_unit_cavalry_control_rus",
+		archery_range = "building_unit_ranged_control_rus",
+		siege_workshop = "building_unit_siege_control_rus",
+		scar_dock = "building_unit_naval_rus",	
+		house = "building_house_control_rus",	
+		blacksmith = "building_tech_unit_infantry_control_rus",
+		outpost = "building_defense_wooden_fort_rus",	
+		wonder_dark_age = "building_landmark_age1_golden_gate_vladimir_control_rus",
+		wonder_feudal_age = "building_landmark_age2_trinity_lavra_control_rus",
+		wonder_castle_age = "building_landmark_age3_kremlin_armoury_rus",
+		wonder_dark_age_alternative = "building_landmark_age1_novgorod_kremlin_control_rus",
+		wonder_feudal_age_alternative = "building_landmark_age2_muscovy_trade_company_control_rus",
+		wonder_castle_age_alternative = "building_landmark_age3_spassakaya_tower_control_rus",
+		stone_wall = "building_defense_wall_rus",
+		stone_gate = "building_defense_wall_gate_rus",	
+	},
+	abbasid = {
+		castle = "building_defense_keep_control_abb",
+		town_center_capital = "building_town_center_capital_abb",
+		town_center = "building_town_center_abb",
+		scar_market = "building_econ_market_control_abb",
+		villager = "unit_villager_1_abb",
+		scout = "unit_scout_1_abb",
+		king = "unit_king_1_abb",
+		house_of_wisdom = "building_house_of_wisdom_control_abb",
+		palisade_wall = "building_defense_palisade_abb",
+		palisade_gate = "building_defense_palisade_gate_abb",
+		monk = "unit_monk_3_abb",
+		monastery = "building_unit_religious_control_abb",
+		barracks = "building_unit_infantry_control_abb",
+		stable = "building_unit_cavalry_control_abb",
+		archery_range = "building_unit_ranged_control_abb",
+		siege_workshop = "building_unit_siege_control_abb",
+		scar_dock = "building_unit_naval_abb",		
+		house = "building_house_control_abb",	
+		blacksmith = "building_tech_unit_infantry_control_abb",
+		outpost = "building_defense_outpost_control_abb",
+		wonder_feudal_age = "building_house_of_wisdom_control_abb",
+		stone_wall = "building_defense_wall_abb",
+		stone_gate = "building_defense_wall_gate_abb",	
+	},
+	abbasid_ha_01 = {
+		castle = "building_defense_keep_control_abb_ha_01",
+		town_center_capital = "building_town_center_capital_abb_ha_01",
+		town_center = "building_town_center_abb_ha_01",
+		scar_market = "building_econ_market_control_abb_ha_01",
+		villager = "unit_villager_1_abb_ha_01",
+		scout = "unit_scout_1_abb_ha_01",
+		king = "unit_king_1_abb_ha_01",
+		house_of_wisdom = "building_house_of_wisdom_control_abb_ha_01",
+		palisade_wall = "building_defense_palisade_abb_ha_01",
+		palisade_gate = "building_defense_palisade_gate_abb_ha_01",
+		monk = "unit_monk_3_abb_ha_01",
+		monastery = "building_unit_religious_control_abb_ha_01",
+		barracks = "building_unit_infantry_control_abb_ha_01",
+		stable = "building_unit_cavalry_control_abb_ha_01",
+		archery_range = "building_unit_ranged_control_abb_ha_01",
+		siege_workshop = "building_unit_siege_control_abb_ha_01",
+		scar_dock = "building_unit_naval_abb_ha_01",		
+		house = "building_house_control_abb_ha_01",	
+		blacksmith = "building_tech_unit_infantry_control_abb_ha_01",
+		outpost = "building_defense_outpost_control_abb_ha_01",
+		wonder_feudal_age = "building_house_of_wisdom_control_abb_ha_01",
+		stone_wall = "building_defense_wall_abb_ha_01",
+		stone_gate = "building_defense_wall_gate_abb_ha_01",	
+	},
+	byzantine = {
+		castle = "building_defense_keep_byz",
+		town_center_capital = "building_town_center_capital_byz",
+		town_center = "building_town_center_byz",
+		scar_market = "building_econ_market_control_byz",
+		villager = "unit_villager_1_byz",
+		scout = "unit_scout_1_byz",
+		king = "unit_king_1_byz",
+		--aquaduct = "building_aquaduct_byz",
+		palisade_wall = "building_defense_palisade_byz",
+		palisade_gate = "building_defense_palisade_gate_byz",
+		monk = "unit_monk_3_byz",
+		monastery = "building_unit_religious_control_byz",
+		--barracks = "building_mercenary_house_byz",
+		barracks = "building_unit_infantry_control_byz",
+		stable = "building_unit_cavalry_control_byz",
+		archery_range = "building_unit_ranged_control_byz",
+		siege_workshop = "building_unit_siege_control_byz",
+		scar_dock = "building_unit_naval_byz",		
+		house = "building_house_control_byz",	
+		blacksmith = "building_tech_unit_infantry_control_byz",
+		outpost = "building_defense_outpost_byz",
+		wonder_imperial_age = "building_wonder_age4_hagia_sophia_byz",
+		wonder_dark_age = "building_landmark_age1_hippodrome_byz",
+		wonder_feudal_age = "building_landmark_age2_galata_tower_byz",
+		wonder_castle_age = "building_landmark_age3_western_merc_house_byz",
+		wonder_dark_age_alternative = "building_landmark_age1_winery_byz",
+		wonder_feudal_age_alternative = "building_landmark_age2_cistern_byz",
+		wonder_castle_age_alternative = "building_landmark_age3_eastern_merc_house_byz",
+		stone_wall = "building_defense_wall_byz",
+		stone_gate = "building_defense_wall_gate_byz",	
+	},
+	mongol = {
+		castle = "building_defense_keep_control_nov",
+		town_center_capital = "building_town_center_capital_mon",
+		town_center_capital_moving = "building_town_center_capital_moving_mon",
+		town_center = "building_town_center_mon",
+		scar_market = "building_econ_market_mon",
+		villager = "unit_villager_1_mon",
+		scout = "unit_khan_1_mon",
+		king = "unit_king_1_mon",
+		house_moving = "building_house_moving_mon",
+		monk = "unit_monk_3_mon",
+		monastery = "building_unit_religious_mon",
+		barracks = "building_unit_infantry_mon",
+		stable = "building_unit_cavalry_mon",
+		archery_range = "building_unit_ranged_mon",
+		siege_workshop = "building_unit_siege_mon",
+		scar_dock = "building_unit_naval_mon",	
+		house = "building_house_mon",
+		blacksmith = "building_tech_unit_infantry_mon",
+		outpost = "building_defense_outpost_mon",
+		wonder_dark_age = "building_wonder_age1_deer_stones_mon",
+		wonder_feudal_age = "building_wonder_age2_khara_khoto_mon",
+		wonder_castle_age = "building_wonder_age3_stupa_mon",
+		wonder_dark_age_alternative = "building_wonder_age1_kurultai_mon",
+		wonder_feudal_age_alternative = "building_wonder_age2_karakorum_mon",
+		wonder_castle_age_alternative = "building_wonder_age3_khanbaliq_mon",
+	},
+	sultanate = {
+		castle = "building_defense_keep_control_sul",
+		town_center_capital = "building_town_center_capital_sul",
+		town_center = "building_town_center_sul",
+		scar_market = "building_econ_market_control_sul",
+		villager = "unit_villager_1_sul",
+		scout = "unit_scout_1_sul",
+		king = "unit_king_1_sul",
+		palisade_wall = "building_defense_palisade_sul",
+		palisade_gate = "building_defense_palisade_gate_sul",
+		monk = "unit_monk_2_sul",
+		monastery = "building_unit_religious_control_sul",
+		barracks = "building_unit_infantry_control_sul",
+		stable = "building_unit_cavalry_control_sul",
+		archery_range = "building_unit_ranged_control_sul",
+		siege_workshop = "building_unit_siege_control_sul",
+		scar_dock = "building_unit_naval_sul",	
+		house = "building_house_control_sul",	
+		blacksmith = "building_tech_unit_infantry_control_sul",
+		outpost = "building_defense_outpost_control_sul",
+		wonder_dark_age = "building_landmark_age1_qutub_minar_control_sul",
+		wonder_feudal_age = "building_landmark_age2_khiji_mosque_control_sul",
+		wonder_castle_age = "building_landmark_age3_bijay_mandal_palace_control_sul",
+		wonder_dark_age_alternative = "building_landmark_age1_quwwat_ul_islam_control_sul",
+		wonder_feudal_age_alternative = "building_landmark_age2_siri_fort_control_sul",
+		wonder_castle_age_alternative = "building_landmark_age3_madrasa_e_firoz_sul",
+		stone_wall = "building_defense_wall_sul",
+		stone_gate = "building_defense_wall_gate_sul",	
+	},
+	malian = {
+		castle = "building_defense_keep_mal",
+		town_center_capital = "building_town_center_capital_mal",
+		town_center = "building_town_center_mal",
+		scar_market = "building_econ_market_mal",
+		villager = "unit_villager_1_mal",
+		scout = "unit_scout_1_mal",
+		king = "unit_king_1_mal",
+		palisade_wall = "building_defense_palisade_mal",
+		palisade_gate = "building_defense_palisade_gate_mal",
+		monk = "unit_monk_3_mal",
+		monastery = "building_unit_religious_mal",
+		barracks = "building_unit_infantry_mal",
+		stable = "building_unit_cavalry_mal",
+		archery_range = "building_unit_ranged_mal",
+		siege_workshop = "building_unit_siege_mal",
+		scar_dock = "building_unit_naval_mal",	
+		house = "building_house_mal",	
+		blacksmith = "building_tech_unit_infantry_mal",
+		outpost = "building_defense_outpost_mal",
+		wonder_dark_age = "building_landmark_age1_landmarka_mal",
+		wonder_feudal_age = "building_landmark_age2_landmarkc_control_mal",
+		wonder_castle_age = "building_landmark_age3_landmarke_mal",
+		wonder_dark_age_alternative = "building_landmark_age1_landmarkb_mal",
+		wonder_feudal_age_alternative = "building_landmark_age2_landmarkd_control_mal",
+		wonder_castle_age_alternative = "building_landmark_age3_landmarkf_mal",
+		stone_wall = "building_defense_wall_mal",
+		stone_gate = "building_defense_wall_gate_mal",	
+	},
+	ottoman = {
+		castle = "building_defense_keep_ott",
+		town_center_capital = "building_town_center_capital_ott",
+		town_center = "building_town_center_ott",
+		scar_market = "building_econ_market_ott",
+		villager = "unit_villager_1_ott",
+		scout = "unit_scout_1_ott",
+		king = "unit_king_1_ott",
+		palisade_wall = "building_defense_palisade_ott",
+		palisade_gate = "building_defense_palisade_gate_ott",
+		monk = "unit_monk_3_ott",
+		monastery = "building_unit_religious_ott",
+		barracks = "building_unit_infantry_ott",
+		stable = "building_unit_cavalry_ott",
+		archery_range = "building_unit_ranged_ott",
+		siege_workshop = "building_unit_siege_ott",
+		scar_dock = "building_unit_naval_ott",	
+		house = "building_house_ott",	
+		blacksmith = "building_tech_unit_infantry_ott",
+		outpost = "building_defense_outpost_ott",
+		wonder_dark_age = "building_landmark_age1_cifte_minareli_medrese_ott",
+		wonder_feudal_age = "building_landmark_age2_tophane_armory_ott",
+		wonder_castle_age = "building_landmark_age3_istanbul_observatory_ott",
+		wonder_dark_age_alternative = "building_landmark_age1_han_caravanserai_ott",
+		wonder_feudal_age_alternative = "building_landmark_age2_topkapi_palace_ott",
+		wonder_castle_age_alternative = "building_landmark_age3_kilitbahir_castle_ott",
+		stone_wall = "building_defense_wall_ott",
+		stone_gate = "building_defense_wall_gate_ott",	
+	},
+	chinese_ha_01 = {
+		castle = "building_defense_keep_chi_ha_01",
+		town_center_capital = "building_town_center_capital_chi_ha_01",
+		town_center = "building_town_center_chi_ha_01",
+		scar_market = "building_econ_market_control_chi_ha_01",
+		villager = "unit_villager_1_chi_ha_01",
+		official = "unit_official_1_chi_ha_01",
+		scout = "unit_scout_1_chi_ha_01",
+		king = "unit_king_1_chi_ha_01",	
+		palisade_wall = "building_defense_palisade_chi_ha_01",
+		palisade_gate = "building_defense_palisade_gate_chi_ha_01",
+		monk = "unit_monk_3_chi_ha_01",
+		monastery = "building_unit_religious_control_chi_ha_01",
+		barracks = "building_unit_infantry_control_chi_ha_01",
+		stable = "building_unit_cavalry_control_chi_ha_01",
+		archery_range = "building_unit_ranged_control_chi_ha_01",
+		siege_workshop = "building_unit_siege_control_chi_ha_01",
+		scar_dock = "building_unit_naval_chi_ha_01",	
+		house = "building_house_control_chi_ha_01",	
+		blacksmith = "building_tech_unit_infantry_control_chi_ha_01",	
+		outpost = "building_defense_outpost_chi_ha_01",
+		wonder_dark_age = "building_landmark_age1_prefecture_chi_ha_01",
+		wonder_feudal_age = "building_landmark_age2_shaolin_temple_control_chi_ha_01",
+		wonder_castle_age = "building_landmark_age3_temple_of_the_sun_control_chi_ha_01",
+		wonder_dark_age_alternative = "building_landmark_age1_meditation_gardens_control_chi_ha_01",
+		wonder_feudal_age_alternative = "building_landmark_age2_white_deer_grotto_control_chi_ha_01",
+		wonder_castle_age_alternative = "building_landmark_age3_library_chi_ha_01",
+		stone_wall = "building_defense_wall_chi_ha_01",
+		stone_gate = "building_defense_wall_gate_chi_ha_01",	
+	},
+	japanese = {
+		castle = "building_defense_keep_jpn",
+		town_center_capital = "building_town_center_capital_jpn",
+		town_center = "building_town_center_jpn",
+		scar_market = "building_econ_market_jpn",
+		villager = "unit_villager_1_jpn",
+		scout = "unit_scout_1_jpn",
+		king = "unit_king_1_jpn",
+		palisade_wall = "building_defense_palisade_jpn",
+		palisade_gate = "building_defense_palisade_gate_jpn",
+		monk = "unit_monk_buddhist_3_jpn",
+		monastery = "building_unit_religious_buddhist_jpn",
+		barracks = "building_unit_infantry_jpn",
+		stable = "building_unit_cavalry_jpn",
+		archery_range = "building_unit_ranged_jpn",
+		siege_workshop = "building_unit_siege_jpn",
+		scar_dock = "building_unit_naval_jpn",	
+		house = "building_house_jpn",	
+		blacksmith = "building_econ_mining_camp_jpn",
+		outpost = "building_defense_outpost_jpn",
+		wonder_dark_age = "building_landmark_age1_shinobi_jpn",
+		wonder_feudal_age = "building_landmark_age2_buddhist_jpn",
+		wonder_castle_age = "building_landmark_age3_ozutsu_jpn",
+		wonder_dark_age_alternative = "building_landmark_age1_storehouse_jpn",
+		wonder_feudal_age_alternative = "building_landmark_age2_shinto_jpn",
+		wonder_castle_age_alternative = "building_landmark_age3_treasure_jpn",
+		stone_wall = "building_defense_wall_jpn",
+		stone_gate = "building_defense_wall_gate_jpn",
+	},
+}
+
+-- Spawn squad and return it to caller in squad group.
+function AGS_SpawnSquad(player_id, sgroup_name, bp_squad, position, position_offset, count)
+	if position == nil then
+		position = Player_GetStartingPosition(player_id)	
+	end
+	if position_offset == nil then
+		position_offset = World_Pos(0, 0, 0)	
+	end	
+	-- Determine proper position and rotation.
+	local nx = 5 * math.floor(math.floor(position.x) / 5)
+	local ny = 5 * math.floor(math.floor(position.y) / 5)
+	local nz = 5 * math.floor(math.floor(position.z) / 5)
+	local placement = World_Pos(nx + position_offset.x, ny + position_offset.y, nz + position_offset.z)
+	local rotation = World_Pos(nx + position_offset.x, ny + position_offset.y, nz + position_offset.z - 1)
+	-- Spawn
+	-- This probably caused lot of issues, let's do simple method from now on.
+	-- local squad_group = Util_CreateSquads(player_id, sgroup_name, bp_squad, placement, nil, count, nil, false, rotation, nil, rotation, nil, nil, nil, nil, false)	
+	local squad_group = SGroup_CreateIfNotFound(sgroup_name)
+	UnitEntry_DeploySquads(player_id, squad_group, {{sbp = bp_squad, numSquads = count }}, placement)
+	Core_CallDelegateFunctions("UnitsSpawned", player_id, position, squad_group)
+	
+	return squad_group	
+end
