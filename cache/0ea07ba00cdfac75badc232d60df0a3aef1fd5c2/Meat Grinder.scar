@@ -860,7 +860,7 @@ function MeatGrinder_SetupObserverUI()
 		
 		local xaml
 		-- for debug just write "not" in front of UI_IsReplay()
-		if UI_IsReplay() then
+		if not UI_IsReplay() then
 			-- original working xaml
 			xaml = [[
 					<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 

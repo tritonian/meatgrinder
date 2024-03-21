@@ -860,7 +860,7 @@ function MeatGrinder_SetupObserverUI()
 		
 		local xaml
 		-- for debug just write "not" in front of UI_IsReplay()
-		if UI_IsReplay() then
+		if not UI_IsReplay() then
 			-- original working xaml
 			xaml = [[
 					<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
@@ -988,8 +988,9 @@ function MeatGrinder_UpdateObserverVars()
 			_mod.data_context.data["player" .. i .. "name"] = Loc_FormatText(player.playerName)
 			_mod.data_context.data["player" .. i .. "points"] = string.format("%00d", points)
 			local playerColor = Player_GetUIColour(player.id)
-			local hexColor = RGBAToHex(playerColor["r"], playerColor["g"], playerColor["b"], playerColor["a"])
-			_mod.data_context.data["player" .. i .. "color"] = hexColor -- might need to reformat what this function returns into a special string, expecting #FF888888 for example?
+			local red = playerColor["r"]
+			local blue = playerColor["b"]
+			_mod.data_context.data["player" .. i .. "color"] = playerColor -- might need to reformat what this function returns into a special string, expecting #FF888888 for example?
 		end
 	end
 	
@@ -1541,17 +1542,4 @@ function AGS_SpawnSquad(player_id, sgroup_name, bp_squad, position, position_off
 	Core_CallDelegateFunctions("UnitsSpawned", player_id, position, squad_group)
 	
 	return squad_group	
-end
-
-function RGBAToHex(r, g, b, a)
-    -- Convert each color component to hexadecimal
-    local hexR = string.format("%02X", r)
-    local hexG = string.format("%02X", g)
-    local hexB = string.format("%02X", b)
-    local hexA = string.format("%02X", a)
-
-    -- Concatenate the hexadecimal values together
-    local hexColor = "#" .. hexA .. hexR .. hexG .. hexB
-
-    return hexColor
 end
