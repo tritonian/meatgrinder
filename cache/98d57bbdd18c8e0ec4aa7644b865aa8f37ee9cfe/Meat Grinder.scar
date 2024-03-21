@@ -301,7 +301,6 @@ function MeatGrinder_SetupObjectiveUI()
 		_mod.localTimerObjectiveForUI = objective
 		Objective_Start(objective, false, false)
 		Objective_StartTimer(objective, COUNT_DOWN, _mod.initialTime * 60, 1)
-		Objective_Show(objective, false, false)
 	end
 	
 	-- Setup list of players and kills variables
@@ -331,63 +330,63 @@ end
 
 function MeatGrinder_UpdatePlayerObjectiveList()
 	
-	---- clear current objectives
-	--if _mod.objectiveList ~= nil then
-		--if next(_mod.objectiveList) ~= nil then
-			----print("have objectives currently, clearing them")
-			--for i,thisObj in pairs(_mod.objectiveList) do
-				--Obj_Delete(_mod.objectiveList[i])
-			--end
-		--end
-	--end
+	-- clear current objectives
+	if _mod.objectiveList ~= nil then
+		if next(_mod.objectiveList) ~= nil then
+			--print("have objectives currently, clearing them")
+			for i,thisObj in pairs(_mod.objectiveList) do
+				Obj_Delete(_mod.objectiveList[i])
+			end
+		end
+	end
 	
-	--_mod.objectiveList = {}
+	_mod.objectiveList = {}
 	
-	--local lastPlayer = nil
-	--local playersUsed = {}
-	----print("Number of players: ", #PLAYERS)
-	--for i=1, #PLAYERS do
-		---- loop through list and grab largest number until all players have been grabbed
-		--local maxPoints = 0
-		--local nextPlayerToAddToList = nil
+	local lastPlayer = nil
+	local playersUsed = {}
+	--print("Number of players: ", #PLAYERS)
+	for i=1, #PLAYERS do
+		-- loop through list and grab largest number until all players have been grabbed
+		local maxPoints = 0
+		local nextPlayerToAddToList = nil
 		
-		---- loop through all players and grab the highest score that isn't in the playersUsed list
-		--for j,player in pairs(PLAYERS) do
+		-- loop through all players and grab the highest score that isn't in the playersUsed list
+		for j,player in pairs(PLAYERS) do
 			
-			---- reset player's points if they are eliminated
-			--if player.isEliminated then
-				--_mod.totalObjectivePointsByPlayer[player.id.PlayerID] = 0
-			--end
+			-- reset player's points if they are eliminated
+			if player.isEliminated then
+				_mod.totalObjectivePointsByPlayer[player.id.PlayerID] = 0
+			end
 						
-			--if playersUsed[player.id.PlayerID] == nil and player.isEliminated == false then
+			if playersUsed[player.id.PlayerID] == nil and player.isEliminated == false then
 				
-				--thisPlayersPoints = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+				thisPlayersPoints = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
 				
-				--if thisPlayersPoints >= maxPoints then
-					--nextPlayerToAddToList = player
-					--maxPoints = thisPlayersPoints
-				--end						
-			--end
-		--end
+				if thisPlayersPoints >= maxPoints then
+					nextPlayerToAddToList = player
+					maxPoints = thisPlayersPoints
+				end						
+			end
+		end
 		
-		--if nextPlayerToAddToList == nil then
-			----print("iterations completed: ", i, " and I think out of valid players to add?")
-			---- hit this point when players start being eliminated since we are using the number of total players at start rather than alive players
-			----Obj_SetColour(_mod.objectiveList[lastPlayer.id.PlayerID], 255, 0, 0, 150) -- doesn't seem to work
-			--break
-		--end
+		if nextPlayerToAddToList == nil then
+			--print("iterations completed: ", i, " and I think out of valid players to add?")
+			-- hit this point when players start being eliminated since we are using the number of total players at start rather than alive players
+			--Obj_SetColour(_mod.objectiveList[lastPlayer.id.PlayerID], 255, 0, 0, 150) -- doesn't seem to work
+			break
+		end
 		
-		--local displayed_obj = Loc_FormatText("$271509ac97504c168bbd6dcbef33a003:47", nextPlayerToAddToList.playerName)
-		--_mod.objectiveList[nextPlayerToAddToList.id.PlayerID] = Obj_Create(nextPlayerToAddToList.id, displayed_obj, _mod.generic_objective_desc, "icons\\races\\common\\victory_conditions\\victory_condition_conquest", "ConquestObjectiveTemplate", nextPlayerToAddToList.raceName, OT_Primary, 0, "conquestObj")
+		local displayed_obj = Loc_FormatText("$271509ac97504c168bbd6dcbef33a003:47", nextPlayerToAddToList.playerName)
+		_mod.objectiveList[nextPlayerToAddToList.id.PlayerID] = Obj_Create(nextPlayerToAddToList.id, displayed_obj, _mod.generic_objective_desc, "icons\\races\\common\\victory_conditions\\victory_condition_conquest", "ConquestObjectiveTemplate", nextPlayerToAddToList.raceName, OT_Primary, 0, "conquestObj")
 		
-		--Obj_SetState(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], OS_Incomplete)
-		--Obj_SetVisible(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], true)
-		--Obj_SetCounterType(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], COUNTER_Count)
-		--Obj_SetCounterCount(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], _mod.totalObjectivePointsByPlayer[nextPlayerToAddToList.id.PlayerID])
+		Obj_SetState(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], OS_Incomplete)
+		Obj_SetVisible(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], true)
+		Obj_SetCounterType(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], COUNTER_Count)
+		Obj_SetCounterCount(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], _mod.totalObjectivePointsByPlayer[nextPlayerToAddToList.id.PlayerID])
 
-		--lastPlayer = nextPlayerToAddToList
-		--playersUsed[nextPlayerToAddToList.id.PlayerID] = 0
-	--end
+		lastPlayer = nextPlayerToAddToList
+		playersUsed[nextPlayerToAddToList.id.PlayerID] = 0
+	end
 	
 	
 	-- update lowest points tracker --
@@ -419,6 +418,29 @@ function MeatGrinder_DoubleVillager()
 		local start_adjusted_pos = Player_GetStartingPosition(player.id) -- MIGHT NEED TO ADJUST FOR NOMAD
 		AGS_SpawnSquad(player.id, snameVIL, sbp_vil, start_adjusted_pos, World_Pos(0, 0, -10), SGroup_CountSpawned(sgroup))	
 	end
+	
+	-- original AGS method
+	--for _, player in pairs(PLAYERS) do	
+		--local villager_count = 6
+		---- Adjust count to a new value.		
+		--local sgroup = Player_GetSquadsFromType(player.id, "villager")
+		--villager_count = villager_count - SGroup_CountSpawned(sgroup)
+		--if villager_count > 0 then
+			--local sbp_vil = BP_GetSquadBlueprint(AGS_ENTITY_TABLE[player.raceName]["villager"])
+			--local snameVIL = "sg_player_" .. "villager" .. "_" .. tostring(player_id)
+			--local start_adjusted_pos = Player_GetStartingPosition(player.id) -- MIGHT NEED TO ADJUST FOR NOMAD
+			--AGS_SpawnSquad(player.id, snameVIL, sbp_vil, start_adjusted_pos, World_Pos(0, 0, -10), villager_count)
+		--elseif villager_count < 0 then 
+			---- Desired number was lower, we will eliminate few villagers.
+			--local idx = 1
+			--while(villager_count < 0) do
+				--local soon_dead = SGroup_GetSquadAt(sgroup, idx)
+				--Squad_Destroy(soon_dead)
+				--villager_count = villager_count + 1
+				--idx = idx + 1
+			--end
+		--end		
+	--end
 end
 
 function MeatGrinder_ResetAllKillPoints()
@@ -521,7 +543,7 @@ function EventCallOnEntityKilled(context)
 				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = 0
 			end
 			
-			--Obj_SetCounterCount(_mod.objectiveList[owner.id.PlayerID], _mod.totalObjectivePointsByPlayer[owner.id.PlayerID])
+			Obj_SetCounterCount(_mod.objectiveList[owner.id.PlayerID], _mod.totalObjectivePointsByPlayer[owner.id.PlayerID])
 			-- update kills tracker UI
 			MeatGrinder_UpdatePlayerObjectiveList()
 		end
@@ -584,7 +606,7 @@ function EventCallOnEntityKilled(context)
 		_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] + victimPop
 	end
 	
-	--Obj_SetCounterCount(_mod.objectiveList[owner.id.PlayerID], _mod.totalObjectivePointsByPlayer[owner.id.PlayerID])
+	Obj_SetCounterCount(_mod.objectiveList[owner.id.PlayerID], _mod.totalObjectivePointsByPlayer[owner.id.PlayerID])
 	
 	-- update kills tracker UI
 	MeatGrinder_UpdatePlayerObjectiveList()
@@ -637,7 +659,6 @@ function EventCallOnPlayerKilled(context)
 			_mod.localTimerObjectiveForUI = objective
 			Objective_Start(objective, false, false)
 			Objective_StartTimer(objective, COUNT_DOWN, _mod.incrementalTime * 30, 1)
-			Objective_Show(objective, false, false)
 		end
 	end
 	
@@ -754,7 +775,6 @@ function MeatGrinder_ElimLowestKillsPlayer()
 	_mod.localTimerObjectiveForUI = objective
 	Objective_Start(objective, false, false)
 	Objective_StartTimer(objective, COUNT_DOWN, _mod.incrementalTime * 60, 1)
-	Objective_Show(objective, false, false)
 	
 	-- reset points if enabled
 	if _mod.resetPointsAtElim ==  true then
@@ -841,7 +861,7 @@ function MeatGrinder_SetupObserverUI()
 		local xaml
 		-- for debug just write "not" in front of UI_IsReplay()
 		if UI_IsReplay() then
-			-- observer XAML
+			-- original working xaml
 			xaml = [[
 					<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -849,10 +869,10 @@ function MeatGrinder_SetupObserverUI()
 						xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
 						xmlns:wm="clr-namespace:WPFGUI.Shared.MarkupExtensions;assembly=EngineUI"
 						HorizontalAlignment="Left" 
-						VerticalAlignment="Top" 
+						VerticalAlignment="Bottom" 
 						SnapsToDevicePixels="True"
 						IsHitTestVisible="False"
-						Margin="20,270,20,20"
+						Margin="20,20,20,500"
 						Width="250">
 						<Grid.Resources>
 							<ResourceDictionary.MergedDictionaries>
@@ -878,8 +898,8 @@ function MeatGrinder_SetupObserverUI()
 					        <RowDefinition />
 					        <RowDefinition />
 					      </Grid.RowDefinitions>
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" TextDecorations="Underline" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
-					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" TextDecorations="Underline" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
+					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
 					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player1color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
 					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
 					      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player2color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
@@ -901,9 +921,9 @@ function MeatGrinder_SetupObserverUI()
 					  </Grid>
 					]]
 		else
-			-- player XAML
+			-- player xaml ui for red border when about to be eliminated - not really working yet
 			xaml = [[
-				<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+				<Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 						xmlns:esControls="clr-namespace:WPFGUI.Shared.Controls;assembly=EngineUI"
 						xmlns:esUtility="clr-namespace:WPFGUI.Shared.Utility;assembly=EngineUI"
@@ -924,12 +944,7 @@ function MeatGrinder_SetupObserverUI()
 				            </Grid.RowDefinitions>
 							<TextBlock Padding="{Binding [data][localPlayerWarningTextPadding]}" Text="{Binding [data][localPlayerWarningText]}" FontWeight="Bold" FontSize="14" Background="#65FFFFFF" Foreground="Firebrick" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" />
 						</Grid>
-						<Grid 
-						Margin="20,270,20,20"
-						Width="250" 
-						Height="auto"
-						HorizontalAlignment="Left" 
-						VerticalAlignment="Top">
+						<Grid Margin="20,20,20,500"	Width="250">
 							<Grid.Resources>
 								<ResourceDictionary.MergedDictionaries>
 									<ResourceDictionary Source="pack://application:,,,ui/Resources/HUDResources.xaml" />
@@ -954,28 +969,28 @@ function MeatGrinder_SetupObserverUI()
 						        <RowDefinition />
 						        <RowDefinition />
 						      </Grid.RowDefinitions>
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" TextDecorations="Underline" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" TextDecorations="Underline" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0">Player</TextBlock>
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Grid.Row="0" Grid.Column="1" Text="{Binding [data][pointsText]}" />
 						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player1color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{Binding [data][player1name]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="18,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding [data][player1points]}" />
 						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player2color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" Text="{Binding [data][player2name]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="18,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Text="{Binding [data][player2points]}" />
 						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player3color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="0" Text="{Binding [data][player3name]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="18,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Text="{Binding [data][player3points]}" />
 						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player4color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0" Text="{Binding [data][player4name]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="18,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Text="{Binding [data][player4points]}" />
 						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player5color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="0" Text="{Binding [data][player5name]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="18,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" Text="{Binding [data][player5points]}" />
 						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player6color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0" Text="{Binding [data][player6name]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="18,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" Text="{Binding [data][player6points]}" />
 						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player7color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="0" Text="{Binding [data][player7name]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="18,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" Text="{Binding [data][player7points]}" />
 						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Foreground="{Binding [data][player8color]}" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0" Text="{Binding [data][player8name]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="18,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,5,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
-						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,5,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Padding="16,0,0,0" VerticalAlignment="Center" FontSize="14" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Text="{Binding [data][player8points]}" />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="0" Text="Next elim: " />
+						      <TextBlock Style="{StaticResource nHUDBaseHeavyTextBlockStyle}" Margin="0,10,0,0" VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Left" Grid.Row="9" Grid.Column="1" Text="{Binding [data][timerSecondsLeft]}" />
 					  </Grid>
-			    </Grid>
+			    </Border>
 				]]
 		end
 		
@@ -1017,10 +1032,6 @@ function MeatGrinder_UpdateObserverVars()
 		else
 			local points = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
 			_mod.data_context.data["player" .. i .. "name"] = Loc_FormatText(player.playerName)
-			--if player.PlayerID == _mod.localPlayer.id.PlayerID then
-				---- give extra star or something on this player
-				--_mod.data_context.data["player" .. i .. "name"] = "**" .. Loc_FormatText(player.playerName) .. "**"
-			--end
 			_mod.data_context.data["player" .. i .. "points"] = string.format("%00d", points)
 			local playerColor = Player_GetUIColour(player.id)
 			local hexColor = RGBAToHex(playerColor["r"], playerColor["g"], playerColor["b"], playerColor["a"])

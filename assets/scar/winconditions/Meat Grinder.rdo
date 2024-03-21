@@ -1346,11 +1346,11 @@
 									<DataValue Name="util::ReflectLocString">10187167624276676315</DataValue>
 									<!--WinCondition/WinCondition::OptionsUIDescriptor/WinCondition::OptionSectionUIDescriptor/WinCondition::BooleanOptionUIDescriptor/util::ReflectLocString/-->
 									<DataObject Name="" Type="util::ReflectLocString" Id="10187167624276676315" OwnerId="4052011901167004919">
-										<DataProperty Name="m_modPart2" Type="UInt32" Value="0"/>
-										<DataProperty Name="m_modPart3" Type="UInt32" Value="0"/>
-										<DataProperty Name="m_modPart0" Type="UInt32" Value="0"/>
-										<DataProperty Name="m_modPart1" Type="UInt32" Value="0"/>
-										<DataProperty Name="m_locStringKey" Type="Int32" Value="0"/>
+										<DataProperty Name="m_modPart2" Type="UInt32" Value="3412966795"/>
+										<DataProperty Name="m_modPart3" Type="UInt32" Value="60830703"/>
+										<DataProperty Name="m_modPart0" Type="UInt32" Value="655690156"/>
+										<DataProperty Name="m_modPart1" Type="UInt32" Value="1276548944"/>
+										<DataProperty Name="m_locStringKey" Type="Int32" Value="66"/>
 									</DataObject>
 								</DataProperty>
 								<DataProperty Name="m_feName" Type="Object">
