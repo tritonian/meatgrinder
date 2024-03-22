@@ -1019,9 +1019,7 @@ function MeatGrinder_UpdateObserverVars()
 			_mod.data_context.data["player" .. i .. "name"] = Loc_FormatText(player.playerName)
 			if player.id.PlayerID == _mod.localPlayer.id.PlayerID then
 				-- give extra star or something on this player
-				local stylizedPlayerName = Loc_FormatText(player.playerName).LocString
-				stylizedPlayerName = "++ " .. stylizedPlayerName .. " ++"
-				_mod.data_context.data["player" .. i .. "name"] = stylizedPlayerName
+				_mod.data_context.data["player" .. i .. "name"] = "**" .. Loc_FormatText(player.playerName) .. "**"
 			end
 			_mod.data_context.data["player" .. i .. "points"] = string.format("%00d", points)
 			local playerColor = Player_GetUIColour(player.id)
