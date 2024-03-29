@@ -28,9 +28,6 @@ import("gameplay/chi/current_dynasty_ui.scar")	-- Displays Chinese Dynasty UI
 import("gameplay/event_cues.scar")
 import("gameplay/currentageui.scar")
 
--- Mod Imports
-import("ags_start_scattered.scar")
-
 -----------------------------------------------------------------------
 -- Data
 -----------------------------------------------------------------------
@@ -734,8 +731,7 @@ function getSelfCost(e, p)
 		end
 	end
 	
-	local entityBlueprint = Entity_GetBlueprint(e)
-	local costlist = Player_GetEntityBPCost(p, entityBlueprint)
+	local costlist = Player_GetEntityBPCost(p, Entity_GetBlueprint(e))
 	local cost = 0.0
 	if type(costlist["wood"]) == "number" then 
 		cost = cost + costlist.wood
@@ -754,12 +750,12 @@ function getSelfCost(e, p)
 	end
 	
 	-- check if joan here and assign cost
-	local joanCost = CheckJoanCost(BP_GetName(entityBlueprint))
+	local joanCost = CheckJoanCost(e["Blueprint"])
 	if joanCost ~= nil then
 		cost = joanCost
 	end
 	
-	if cost < 50 then -- think about any edge cases for this floor - mali houses for example
+	if cost < 50 then 
 		return 50.0
 	else
 		return cost
@@ -810,7 +806,7 @@ function MeatGrinder_SetupObserverUI()
 							</ResourceDictionary.MergedDictionaries>
 						</Grid.Resources>
 						<Grid.Background>
-        					<SolidColorBrush Color="#60000000"/>
+        					<SolidColorBrush Color="#40000000"/>
    						</Grid.Background>
 					      <Grid.ColumnDefinitions>
 					        <ColumnDefinition />
@@ -886,7 +882,7 @@ function MeatGrinder_SetupObserverUI()
 								</ResourceDictionary.MergedDictionaries>
 							</Grid.Resources>
 							<Grid.Background>
-	        					<SolidColorBrush Color="#60000000"/>
+	        					<SolidColorBrush Color="#40000000"/>
 	   						</Grid.Background>
 						      <Grid.ColumnDefinitions>
 						        <ColumnDefinition />
@@ -1544,7 +1540,7 @@ function RGBAToHex(r, g, b, a)
 end
 
 function CheckJoanCost(entityName)
-	-- 100, 250, 500, 1000 for levels 1, 2, 3, 4 respectively
+	-- TODO: Check if this works lol
 	if entityName == "unit_jeanne_d_arc_1_fre_ha_01" then
 		-- villager joan, 100 gold
 		return 100.0

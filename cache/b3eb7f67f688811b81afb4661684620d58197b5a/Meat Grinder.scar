@@ -28,9 +28,6 @@ import("gameplay/chi/current_dynasty_ui.scar")	-- Displays Chinese Dynasty UI
 import("gameplay/event_cues.scar")
 import("gameplay/currentageui.scar")
 
--- Mod Imports
-import("ags_start_scattered.scar")
-
 -----------------------------------------------------------------------
 -- Data
 -----------------------------------------------------------------------
