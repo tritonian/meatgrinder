@@ -28,9 +28,6 @@ import("gameplay/chi/current_dynasty_ui.scar")	-- Displays Chinese Dynasty UI
 import("gameplay/event_cues.scar")
 import("gameplay/currentageui.scar")
 
--- Mod Imports
-import("ags_start_scattered.scar")
-
 -----------------------------------------------------------------------
 -- Data
 -----------------------------------------------------------------------
@@ -759,7 +756,7 @@ function getSelfCost(e, p)
 		cost = joanCost
 	end
 	
-	if cost < 50 then -- think about any edge cases for this floor - mali houses for example
+	if cost < 50 then 
 		return 50.0
 	else
 		return cost
@@ -810,7 +807,7 @@ function MeatGrinder_SetupObserverUI()
 							</ResourceDictionary.MergedDictionaries>
 						</Grid.Resources>
 						<Grid.Background>
-        					<SolidColorBrush Color="#60000000"/>
+        					<SolidColorBrush Color="#40000000"/>
    						</Grid.Background>
 					      <Grid.ColumnDefinitions>
 					        <ColumnDefinition />
@@ -886,7 +883,7 @@ function MeatGrinder_SetupObserverUI()
 								</ResourceDictionary.MergedDictionaries>
 							</Grid.Resources>
 							<Grid.Background>
-	        					<SolidColorBrush Color="#60000000"/>
+	        					<SolidColorBrush Color="#40000000"/>
 	   						</Grid.Background>
 						      <Grid.ColumnDefinitions>
 						        <ColumnDefinition />

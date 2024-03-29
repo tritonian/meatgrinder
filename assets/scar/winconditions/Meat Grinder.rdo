@@ -1330,7 +1330,7 @@
 							<DataObject Name="" Type="WinCondition::BooleanOptionUIDescriptor" Id="4052011901167004919" OwnerId="12507742527801272000">
 								<DataProperty Name="#BaseTypes" Type="String" Value="WinCondition::OptionUIDescriptor#0|"/>
 								<DataProperty Name="m_key" Type="String" Value="conquest_victory"/>
-								<DataProperty Name="m_defaultValue" Type="Bool" Value="false"/>
+								<DataProperty Name="m_defaultValue" Type="Bool" Value="true"/>
 								<DataProperty Name="m_feSummaryName" Type="Object">
 									<DataValue Name="util::ReflectLocString">1017868975749778714</DataValue>
 									<!--WinCondition/WinCondition::OptionsUIDescriptor/WinCondition::OptionSectionUIDescriptor/WinCondition::BooleanOptionUIDescriptor/util::ReflectLocString/-->

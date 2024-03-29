@@ -28,9 +28,6 @@ import("gameplay/chi/current_dynasty_ui.scar")	-- Displays Chinese Dynasty UI
 import("gameplay/event_cues.scar")
 import("gameplay/currentageui.scar")
 
--- Mod Imports
-import("ags_start_scattered.scar")
-
 -----------------------------------------------------------------------
 -- Data
 -----------------------------------------------------------------------
@@ -332,7 +329,66 @@ function MeatGrinder_SetupObjectiveUI()
 	MeatGrinder_UpdatePlayerObjectiveList()
 end
 
-function MeatGrinder_UpdatePlayerObjectiveList()	
+function MeatGrinder_UpdatePlayerObjectiveList()
+	
+	---- clear current objectives
+	--if _mod.objectiveList ~= nil then
+		--if next(_mod.objectiveList) ~= nil then
+			----print("have objectives currently, clearing them")
+			--for i,thisObj in pairs(_mod.objectiveList) do
+				--Obj_Delete(_mod.objectiveList[i])
+			--end
+		--end
+	--end
+	
+	--_mod.objectiveList = {}
+	
+	--local lastPlayer = nil
+	--local playersUsed = {}
+	----print("Number of players: ", #PLAYERS)
+	--for i=1, #PLAYERS do
+		---- loop through list and grab largest number until all players have been grabbed
+		--local maxPoints = 0
+		--local nextPlayerToAddToList = nil
+		
+		---- loop through all players and grab the highest score that isn't in the playersUsed list
+		--for j,player in pairs(PLAYERS) do
+			
+			---- reset player's points if they are eliminated
+			--if player.isEliminated then
+				--_mod.totalObjectivePointsByPlayer[player.id.PlayerID] = 0
+			--end
+						
+			--if playersUsed[player.id.PlayerID] == nil and player.isEliminated == false then
+				
+				--thisPlayersPoints = _mod.totalObjectivePointsByPlayer[player.id.PlayerID]
+				
+				--if thisPlayersPoints >= maxPoints then
+					--nextPlayerToAddToList = player
+					--maxPoints = thisPlayersPoints
+				--end						
+			--end
+		--end
+		
+		--if nextPlayerToAddToList == nil then
+			----print("iterations completed: ", i, " and I think out of valid players to add?")
+			---- hit this point when players start being eliminated since we are using the number of total players at start rather than alive players
+			----Obj_SetColour(_mod.objectiveList[lastPlayer.id.PlayerID], 255, 0, 0, 150) -- doesn't seem to work
+			--break
+		--end
+		
+		--local displayed_obj = Loc_FormatText("$271509ac97504c168bbd6dcbef33a003:47", nextPlayerToAddToList.playerName)
+		--_mod.objectiveList[nextPlayerToAddToList.id.PlayerID] = Obj_Create(nextPlayerToAddToList.id, displayed_obj, _mod.generic_objective_desc, "icons\\races\\common\\victory_conditions\\victory_condition_conquest", "ConquestObjectiveTemplate", nextPlayerToAddToList.raceName, OT_Primary, 0, "conquestObj")
+		
+		--Obj_SetState(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], OS_Incomplete)
+		--Obj_SetVisible(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], true)
+		--Obj_SetCounterType(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], COUNTER_Count)
+		--Obj_SetCounterCount(_mod.objectiveList[nextPlayerToAddToList.id.PlayerID], _mod.totalObjectivePointsByPlayer[nextPlayerToAddToList.id.PlayerID])
+
+		--lastPlayer = nextPlayerToAddToList
+		--playersUsed[nextPlayerToAddToList.id.PlayerID] = 0
+	--end
+	
 	
 	-- update lowest points tracker --
 	_mod.lowestPoints = math.huge
@@ -465,6 +521,7 @@ function EventCallOnEntityKilled(context)
 				_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = 0
 			end
 			
+			--Obj_SetCounterCount(_mod.objectiveList[owner.id.PlayerID], _mod.totalObjectivePointsByPlayer[owner.id.PlayerID])
 			-- update kills tracker UI
 			MeatGrinder_UpdatePlayerObjectiveList()
 		end
@@ -526,6 +583,8 @@ function EventCallOnEntityKilled(context)
 		end
 		_mod.totalObjectivePointsByPlayer[owner.id.PlayerID] = _mod.totalObjectivePointsByPlayer[owner.id.PlayerID] + victimPop
 	end
+	
+	--Obj_SetCounterCount(_mod.objectiveList[owner.id.PlayerID], _mod.totalObjectivePointsByPlayer[owner.id.PlayerID])
 	
 	-- update kills tracker UI
 	MeatGrinder_UpdatePlayerObjectiveList()
@@ -733,9 +792,7 @@ function getSelfCost(e, p)
 			p = Entity_GetPlayerOwner(e)
 		end
 	end
-	
-	local entityBlueprint = Entity_GetBlueprint(e)
-	local costlist = Player_GetEntityBPCost(p, entityBlueprint)
+	local costlist = Player_GetEntityBPCost(p, Entity_GetBlueprint(e))
 	local cost = 0.0
 	if type(costlist["wood"]) == "number" then 
 		cost = cost + costlist.wood
@@ -752,14 +809,7 @@ function getSelfCost(e, p)
 	if type(costlist["merc_byz"]) == "number" then 
 		cost = cost + costlist.merc_byz * 2
 	end
-	
-	-- check if joan here and assign cost
-	local joanCost = CheckJoanCost(BP_GetName(entityBlueprint))
-	if joanCost ~= nil then
-		cost = joanCost
-	end
-	
-	if cost < 50 then -- think about any edge cases for this floor - mali houses for example
+	if cost < 50 then 
 		return 50.0
 	else
 		return cost
@@ -810,7 +860,7 @@ function MeatGrinder_SetupObserverUI()
 							</ResourceDictionary.MergedDictionaries>
 						</Grid.Resources>
 						<Grid.Background>
-        					<SolidColorBrush Color="#60000000"/>
+        					<SolidColorBrush Color="#40000000"/>
    						</Grid.Background>
 					      <Grid.ColumnDefinitions>
 					        <ColumnDefinition />
@@ -875,8 +925,8 @@ function MeatGrinder_SetupObserverUI()
 							<TextBlock Padding="{Binding [data][localPlayerWarningTextPadding]}" Text="{Binding [data][localPlayerWarningText]}" FontWeight="Bold" FontSize="14" Background="#65FFFFFF" Foreground="Firebrick" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" />
 						</Grid>
 						<Grid 
-						Margin="20,240,20,20"
-						Width="240" 
+						Margin="20,270,20,20"
+						Width="250" 
 						Height="auto"
 						HorizontalAlignment="Left" 
 						VerticalAlignment="Top">
@@ -886,7 +936,7 @@ function MeatGrinder_SetupObserverUI()
 								</ResourceDictionary.MergedDictionaries>
 							</Grid.Resources>
 							<Grid.Background>
-	        					<SolidColorBrush Color="#60000000"/>
+	        					<SolidColorBrush Color="#40000000"/>
 	   						</Grid.Background>
 						      <Grid.ColumnDefinitions>
 						        <ColumnDefinition />
@@ -970,7 +1020,7 @@ function MeatGrinder_UpdateObserverVars()
 			if player.id.PlayerID == _mod.localPlayer.id.PlayerID then
 				-- give extra star or something on this player
 				local stylizedPlayerName = Loc_FormatText(player.playerName).LocString
-				stylizedPlayerName = "++ " .. stylizedPlayerName .. " ++"
+				stylizedPlayerName = "🟆 " .. stylizedPlayerName .. " 🟆"
 				_mod.data_context.data["player" .. i .. "name"] = stylizedPlayerName
 			end
 			_mod.data_context.data["player" .. i .. "points"] = string.format("%00d", points)
@@ -1541,26 +1591,4 @@ function RGBAToHex(r, g, b, a)
     local hexColor = "#" .. hexA .. hexR .. hexG .. hexB
 
     return hexColor
-end
-
-function CheckJoanCost(entityName)
-	-- 100, 250, 500, 1000 for levels 1, 2, 3, 4 respectively
-	if entityName == "unit_jeanne_d_arc_1_fre_ha_01" then
-		-- villager joan, 100 gold
-		return 100.0
-	elseif entityName == "unit_jeanne_d_arc_2_archer_fre_ha_01" then
-		return 250.0
-	elseif entityName == "unit_jeanne_d_arc_2_womanatarms_fre_ha_01" then
-		return 250.0
-	elseif entityName == "unit_jeanne_d_arc_3_melee_knight_fre_ha_01" then
-		return 500.0
-	elseif entityName == "unit_jeanne_d_arc_3_ranged_knight_fre_ha_01" then
-		return 500.0
-	elseif entityName == "unit_jeanne_d_arc_4_melee_monarch_fre_ha_01" then
-		return 1000.0
-	elseif entityName == "unit_jeanne_d_arc_4_ranged_monarch_fre_ha_01" then
-		return 1000.0
-	else
-		return nil
-	end
 end
