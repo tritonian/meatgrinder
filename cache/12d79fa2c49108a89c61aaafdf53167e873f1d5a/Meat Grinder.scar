@@ -19,7 +19,7 @@ import("gameplay/score.scar")					-- Tracks player score
 import("gameplay/diplomacy.scar")				-- Manages Tribute
 
 -- Import Win Conditions
-import("winconditions/annihilation.scar")		-- Support for eliminating a player when they can no longer fight or produce units
+--import("winconditions/annihilation.scar")		-- Support for eliminating a player when they can no longer fight or produce units
 import("winconditions/elimination.scar")		-- Support for player quitting or dropping (through pause menu or disconnection)
 import("winconditions/surrender.scar")			-- Support for player surrender (through pause menu)
 
@@ -222,17 +222,27 @@ function MeatGrinder_OnInit()
 	_mod.revealOnElim = options_selected.other_options.reveal_on_elim
 	--print("Reveal on elim: ", _mod.revealOnElim)
 	
+	-- checked in nomad's file
+	--_mod.nomadStart = options_selected.other_options.nomad
+	--print("Nomad start in options grab: ", _mod.nomadStart)
+	
 	-----------------------------
 	-- FOR DEBUG - make this a dev setting
 	--_mod.initialTime = _mod.initialTime * 0.2
 	--_mod.incrementalTime = _mod.incrementalTime * 0.2
 	-----------------------------
 	
-	-- standard conquest -- nomad conquest loaded always and unloaded if unneeded
+	-- standard conquest
 	if options_selected.victory_options.conquest_victory == true and options_selected.other_options.nomad == false then	
 		print("Starting standard conquest.")
 		import("winconditions/conquest.scar")	
 	end
+	
+	-- nomad conquest to fix elimination when starting nomad spawn
+	--if options_selected.victory_options.conquest_victory == true and options_selected.other_options.nomad == true then		
+		--print("Starting nomad conquest.")
+		--import("nomadconquest.scar")	-- has some changes to prevent landmark elimination before player has built first landmark
+	--end
 	
 	if options_selected.victory_options.religious_victory == true then		
 		import("winconditions/religious.scar")	

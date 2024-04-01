@@ -96,7 +96,7 @@ function AGS_Scattered_CreateSpawn()
 		
 		-- race specific
 		if player.raceName == "hre_ha_01" then
-			thisPlayersVilCount = math.floor(thisPlayersVilCount * 0.83)
+			thisPlayersVilCount = floor(thisPlayersVilCount * 0.83) -- Need to round this or something, check math on number
 		elseif player.raceName == "french_ha_01" then
 			-- spawn a joan
 			local spawn_pos = AGS_Scattered_GetScatterPosition()

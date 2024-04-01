@@ -89,14 +89,13 @@ function AGS_Scattered_CreateSpawn()
 		local thisPlayersVilCount = VILLAGER_COUNT
 		
 		-- check if double starting vils is on
-		_mod.double_starting_vils = options_selected.other_options.double_vils
 		if _mod.double_starting_vils then
 			thisPlayersVilCount = thisPlayersVilCount * 2
 		end
 		
 		-- race specific
-		if player.raceName == "hre_ha_01" then
-			thisPlayersVilCount = math.floor(thisPlayersVilCount * 0.83)
+		if player.raceName == "hre_ha_01" then -- These names need fixed
+			thisPlayersVilCount = thisPlayersVilCount * 0.8 -- Need to floor this or something
 		elseif player.raceName == "french_ha_01" then
 			-- spawn a joan
 			local spawn_pos = AGS_Scattered_GetScatterPosition()

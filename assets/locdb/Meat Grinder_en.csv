@@ -50,7 +50,7 @@
 49,,,,,,How 
 50,,,,,,Eliminate All Tied Players
 51,,,,,,How point ties are handled. More options coming soon?
-52,,,,,,Unit cost might be a bit buggy - like Joan only worth 50. 
+52,,,,,,Points based on the resource cost of the unit/building killed. Landmarks worth zero. Should be adjusted based on civ bonuses. Joan worth buyback cost.
 53,,,,,,Doubles starting villagers - OOTD only gets 5 while others get 6
 54,,,,,,Add Time If Surrender
 55,,,,,,Adds 2 minutes if someone leaves with less than 2 minutes remaining.
@@ -65,3 +65,7 @@
 64,,,,,,11
 65,,,,,,12
 66,,,,,,Can be good to knock out players who are dead anyway
+67,,,,,,Nomad
+68,,,,,,Nomad start - 4 villagers
+69,,,,,,13
+70,,,,,,14
