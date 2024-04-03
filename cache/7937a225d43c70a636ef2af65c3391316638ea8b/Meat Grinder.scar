@@ -229,11 +229,10 @@ function MeatGrinder_OnInit()
 	-----------------------------
 	
 	-- standard conquest -- nomad conquest loaded always and unloaded if unneeded
-	-- NOW HANDLED INSIDE CUSTOM CONQUEST MODULE THAT SUPPORTS NOMAD
-	--if options_selected.victory_options.conquest_victory == true and options_selected.other_options.nomad == false then	
-		--print("Starting standard conquest.")
-		--import("winconditions/conquest.scar")	
-	--end
+	if options_selected.victory_options.conquest_victory == true and options_selected.other_options.nomad == false then	
+		print("Starting standard conquest.")
+		import("winconditions/conquest.scar")	
+	end
 	
 	if options_selected.victory_options.religious_victory == true then		
 		import("winconditions/religious.scar")	
@@ -243,13 +242,12 @@ function MeatGrinder_OnInit()
 		import("winconditions/wonder.scar")	
 	end
 	
+	
 	-- just allow it to run all the time?
 	MeatGrinder_SetupObserverUI()
 end
 
 function MeatGrinder_Start()
-	
-	FOW_UnExploreAll()
 	
 	_mod.localPlayer = Core_GetPlayersTableEntry(Game_GetLocalPlayer())
 	
@@ -264,7 +262,7 @@ function MeatGrinder_Start()
 	
 	MeatGrinder_SetupObjectiveUI()
 	
-	if _mod.double_starting_vils == true and not _mod.nomadStart then
+	if _mod.double_starting_vils == true then
 		MeatGrinder_DoubleVillager()
 	end
 	
@@ -365,7 +363,7 @@ function MeatGrinder_DoubleVillager()
 		local sgroup = Player_GetSquadsFromType(player.id, "villager")
 		local sbp_vil = BP_GetSquadBlueprint(AGS_ENTITY_TABLE[player.raceName]["villager"])
 		local snameVIL = "sg_player_" .. "villager" .. "_" .. tostring(player_id)
-		local start_adjusted_pos = Player_GetStartingPosition(player.id)
+		local start_adjusted_pos = Player_GetStartingPosition(player.id) -- MIGHT NEED TO ADJUST FOR NOMAD
 		AGS_SpawnSquad(player.id, snameVIL, sbp_vil, start_adjusted_pos, World_Pos(0, 0, -10), SGroup_CountSpawned(sgroup))	
 	end
 end

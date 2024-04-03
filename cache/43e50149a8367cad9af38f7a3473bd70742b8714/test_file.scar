@@ -1,0 +1,391 @@
+-----------------------------------------------------------------------
+--
+-- Conquest Win Condition 
+--
+-- A team is eliminated when all of its players have lost all their landmarks (including capital town center).
+-- The last team remaining is the victor.
+--
+-- (c) Relic Entertainment 2017
+--
+-----------------------------------------------------------------------
+
+-- Provide data to replay system through this script
+import("replay/replaystatviewer.scar")
+
+-----------------------------------------------------------------------
+-- Private/Internal functions
+-----------------------------------------------------------------------
+
+function Conquest_CheckVictory()
+	
+	-- Track one of the surviving players
+	local winning_player = nil
+	
+	-- For all players
+	for i, player in pairs(PLAYERS) do
+		
+		-- If player is not eliminated
+		if not Core_IsPlayerEliminated(player.id) then 
+			
+			-- Get remaining enemies of player
+			local enemies_remaining = Conquest_GetActiveEnemyCount(player)
+			
+			-- If no enemies remain
+			if enemies_remaining == 0 then
+				-- Track player
+				winning_player = player
+				break
+			end
+		end
+	end
+	
+	if winning_player ~= nil then
+		
+		-- For every player
+		for i, player in pairs(PLAYERS) do
+			
+			-- If player is winning player's ally
+			if Player_ObserveRelationship(player.id, winning_player.id) == R_ALLY then
+				Core_SetPlayerVictorious(player.id, Conquest_WinnerPresentation, WR_CONQUEST)	
+			end
+		end
+		
+		Core_OnGameOver()
+	-- If a winning player was not found, check if no humans remain
+	else
+		
+		-- Track humans remaining
+		local humansRemaining = {}
+		for i, player in pairs(PLAYERS) do
+			if (not player.isEliminated) and Player_IsHuman(player.id) then
+				table.insert(humansRemaining, player)
+			end
+		end
+		
+		-- If no humans remain, resolve match as winnerless. This gracefully resolves matches where the last human player surrenders in an AI game with RelicLink.
+		if #humansRemaining == 0 then
+			Core_OnGameOver()
+			Core_WinnerlessGameOver(Annihilation_LoserPresentation, WR_ANNIHILATION)
+		end
+	end
+end
+
+
+function Conquest_IsACapital(entity)		
+	return Entity_GetStateModelBool(entity, "town_center_is_capital") or Entity_IsOfType(entity, "town_center_capital")
+end
+
+
+function Conquest_IsALandmark(entity)		
+	return Entity_IsOfType(entity, _conquest.types.landmark) and not Entity_IsOfType(entity, _conquest.types.wonder)	
+end
+
+-- Returns number of Landmarks a player has built/remaining
+function Conquest_GetPlayerLandmarkCount(player)
+	
+	-- Track Landmarks
+	local player_landmarks = {
+		built = 0,
+		remaining = 0,
+	}
+	
+	-- For every player Landmark
+	for id, landmark in pairs(player.landmarks) do
+		
+		-- Increment Landmark count
+		player_landmarks.built = player_landmarks.built + 1
+		
+		-- If Landmark is not destroyed
+		if Entity_IsValid(id) and Entity_GetStateModelBool(Entity_FromID(id), "landmark_active") then 
+			
+			-- Incremement Landmarks remaining
+			player_landmarks.remaining = player_landmarks.remaining + 1
+		end
+		
+	end
+	
+	-- Return Landmark data
+	return player_landmarks
+	
+end
+
+-- Returns number of Allied Landmarks standing for a given player (including given player)
+function Conquest_GetAllyLandmarkCount(player)
+	
+	local ally_landmarks = {
+		built = 0,
+		remaining = 0,
+	}
+	
+	-- For every player
+	for j, player_other in pairs(PLAYERS) do
+		
+		-- Only count landmarks for players still in the game
+		if not Core_IsPlayerEliminated(player_other.id) then
+			
+			-- If players are Allies
+			if Player_ObserveRelationship(player.id, player_other.id) == R_ALLY then
+				
+				-- For every player Landmark
+				for id, landmark in pairs(player_other.landmarks) do
+					
+					-- Increment Landmark count
+					ally_landmarks.built = ally_landmarks.built + 1
+					
+					-- If Landmark is not destroyed
+					if Entity_IsValid(id) and Entity_GetStateModelBool(Entity_FromID(id), "landmark_active") then 
+						
+						-- Incremement Landmarks remaining
+						ally_landmarks.remaining = ally_landmarks.remaining + 1
+					end
+				end
+			end
+		end
+	end
+	
+	-- Return Landmark data
+	return ally_landmarks
+	
+end
+
+-- Returns number of Enemy Landmarks standing for a given player
+function Conquest_GetEnemyLandmarkCount(player)
+	
+	local enemy_landmarks = {
+		built = 0,
+		remaining = 0,
+	}
+	
+	-- For every player
+	for j, player_other in pairs(PLAYERS) do
+		
+		-- Only count landmarks for players still in the game
+		if not Core_IsPlayerEliminated(player_other.id) then
+			
+			-- If players are Enemies
+			if Player_ObserveRelationship(player.id, player_other.id) == R_ENEMY then
+				
+				-- For every player Landmark
+				for id, landmark in pairs(player_other.landmarks) do
+					
+					-- Increment Landmark count
+					enemy_landmarks.built = enemy_landmarks.built + 1
+					
+					-- If Landmark is not destroyed
+					if Entity_IsValid(id) and Entity_GetStateModelBool(Entity_FromID(id), "landmark_active") then 
+						
+						-- Incremement Landmarks remaining
+						enemy_landmarks.remaining = enemy_landmarks.remaining + 1
+					end
+				end
+			end
+		end
+	end
+	
+	-- Return Landmark data
+	return enemy_landmarks
+	
+end
+
+-- Returns number of enemies remaining for a given player
+function Conquest_GetActiveEnemyCount(player)
+	
+	-- Track enemies remaining
+	local enemies_remaining = {}
+	
+	-- For every other player
+	for i, player_other in pairs(PLAYERS) do
+		
+		-- If other player is not the given player, is an enemy, and is not eliminated
+		if player ~= player_other and not Core_IsPlayerEliminated(player_other.id) and Player_ObserveRelationship(player.id, player_other.id) == R_ENEMY then 
+			
+			-- Add enemy player to table
+			table.insert(enemies_remaining, player_other)
+		end
+	end
+	
+	-- Return number of enemies remaining
+	return #enemies_remaining
+end
+
+-- Destroy a player's TC/Landmarks so they cannot be repaired by an ally (e.g. on player elimination)
+function Conquest_DestroyLandmarks(player)
+	
+	-- For every player Landmark
+	for id, landmark in pairs(player.landmarks) do
+		
+		-- Kills entity (note: this function executes final destruction animation vs Entity_Destroy which despawns the entity).
+		Entity_Kill(landmark.entity)
+		
+	end
+end
+
+-----------------------------------------------------------------------
+-- UI Functions
+-----------------------------------------------------------------------
+
+function Conquest_AddObjective()	
+	if _conquest.objective == nil then 
+		local localPlayer = Core_GetPlayersTableEntry(Game_GetLocalPlayer())
+		local enemies = 0
+		_conquest.objective_title = 11159056				-- "Destroy all enemy landmarks"
+
+		-- Set primary objective data template (Note: No OR needed as Conquest always precedes other objectives)
+		data_template = "ConquestObjectiveTemplate"
+		
+		_conquest.objective = Obj_Create(localPlayer.id, _conquest.objective_title, Loc_Empty(), _conquest.icons.objective, data_template, localPlayer.raceName, OT_Primary, 0, "conquestObj")		
+				
+		if _first_primary_objective == nil then 
+			_first_primary_objective = _conquest.objective
+		end
+		
+		
+		Obj_SetState(_conquest.objective, OS_Incomplete)
+		Obj_SetVisible(_conquest.objective, true)
+		Obj_SetProgressVisible(_conquest.objective, true)		
+		Obj_SetCounterType(_conquest.objective, COUNTER_CountUpTo)
+	end
+end
+
+
+function Conquest_UpdateObjective()
+	if _conquest.objective ~= nil then
+		local localPlayer = Core_GetPlayersTableEntry(Game_GetLocalPlayer())		
+		local landmarks_destroyed = 0
+		enemy_landmarks = Conquest_GetEnemyLandmarkCount(localPlayer)
+		landmarks_destroyed = enemy_landmarks.built - enemy_landmarks.remaining
+		
+		Obj_SetCounterCount(_conquest.objective, landmarks_destroyed)
+		Obj_SetCounterMax(_conquest.objective, enemy_landmarks.built)	
+		Obj_SetProgress(_conquest.objective, landmarks_destroyed / enemy_landmarks.built)
+	end
+end
+
+
+function Conquest_RemoveObjective()
+	if _conquest.objective ~= nil then
+		Obj_SetVisible(_conquest.objective, false)		
+		_conquest.objective = nil
+	end	
+end			
+
+-- Event cue function to support delayed events
+function Conquest_CreateEventCue(context, data)
+	
+	-- Only show events to active players
+	if not Core_IsPlayerEliminated(Game_GetLocalPlayer()) then
+		
+		-- If event should play in event queue and center screen notification (note: uses high priority icons by default)
+		if data.highPriority then
+			
+			UI_CreateEventCueClickable(-1, 10.0, 0, 20.0, data.title, Loc_Empty(), "event_with_player_color", "icons\\event_queue_high_priority", data.sfx, data.uiColour.r, data.uiColour.g, data.uiColour.b, data.uiColour.a, ECV_Queue, nothing)
+			UI_CreateEventCueClickable(-1, 10.0, 0, 20.0, data.title, Loc_Empty(), "event_with_player_color", "icons\\event_queue_high_priority_large", "", data.uiColour.r, data.uiColour.g, data.uiColour.b, data.uiColour.a, ECV_Title, nothing)
+			
+		-- If event should only play in event queue (note: uses either high priority icon or if not path is specified, the objective arrow icon)
+		else
+			
+			UI_CreateEventCueClickable(-1, 10.0, 0, 20.0, data.title, Loc_Empty(), "event_with_player_color", data.queue_icon, data.sfx, data.uiColour.r, data.uiColour.g, data.uiColour.b, data.uiColour.a, ECV_Queue, nothing)
+			
+		end
+	end
+end
+
+function Conquest_SetPlayerDefeated(context, data)
+
+	Core_SetPlayerDefeated(data.player_id, Conquest_LoserPresentation, WR_CONQUEST)
+	
+end
+
+-- Win/Lose Presentation Functions
+function Conquest_WinnerPresentation(playerID)
+	
+	Rule_AddOneShot(Conquest_DelayedWinnerPresentation, _conquest.presentation_delay, {playerID = playerID})
+	
+end
+
+function Conquest_DelayedWinnerPresentation(context, data)
+	
+	if data.playerID == Game_GetLocalPlayer() then
+		Misc_ClearSelection()
+		Taskbar_SetVisibility(false)		
+		
+		Obj_SetState(_conquest.objective, OS_Complete)
+		Obj_CreatePopup(_conquest.objective, _conquest.objective_title)
+		Music_PlayStinger(MUS_STING_PRIMARY_OBJ_COMPLETE_ENDGAME)
+		Conquest_RemoveObjective()
+		
+		Rule_AddOneShot(_gameOver_message, 
+			GAMEOVER_OBJECTIVE_TIME, { 
+			_playerID = data.playerID, 
+			_icon = _conquest.icons.objective, 
+			_endType = Loc_GetString(11161277), 					-- "VICTORY"  
+			_message = Loc_Empty(),									-- Unused 
+			_sound = _conquest.sfx.victory, 
+			_videoURI = "stinger_victory" 
+		})
+	end
+	
+end
+
+function Conquest_LoserPresentation(playerID)
+	
+	Rule_AddOneShot(Conquest_DelayedLoserPresentation, _conquest.presentation_delay, {playerID = playerID})
+	
+end
+
+function _Conquest_RevealUI()
+	Taskbar_SetVisibility(true)
+end
+
+function Conquest_SetupFailStinger()
+	Misc_ClearSelection()
+	Taskbar_SetVisibility(false)
+	Obj_SetState(_conquest.objective, OS_Failed)		
+	Obj_CreatePopup(_conquest.objective, _conquest.objective_title)
+	Music_PlayStinger(MUS_STING_PRIMARY_OBJ_FAIL)
+end
+
+function Conquest_DelayedLoserPresentation(context, data)
+
+	local player_local = Game_GetLocalPlayer()
+	if data.playerID == player_local or Player_ObserveRelationship(player_local, data.playerID) == R_ALLY then
+		-- Team member was destroyed, check if the entire team is eliminated
+		
+		if Core_IsEntireTeamEliminated(player_local) then
+			Conquest_SetupFailStinger()
+			
+			
+			local title = Loc_GetString(11165094)			-- "DEFEAT"
+			local video = "stinger_defeat"
+			Rule_AddOneShot(_gameOver_message, 
+				GAMEOVER_OBJECTIVE_TIME, {
+				_playerID = player_local, 
+				_icon = _conquest.icons.objective,
+				_endType = title,
+				_message = Loc_Empty(),
+				_sound = _conquest.sfx.defeat, 
+				_videoURI = video,
+				_callback = _Conquest_RevealUI
+			})
+			return
+		end
+	end
+	
+	-- Was not a Total party kill, however if the loser is the local player - they are eliminated
+	if data.playerID == Game_GetLocalPlayer() then	
+		Conquest_SetupFailStinger()
+		
+		local title = Loc_GetString(11165821)		-- "ELIMINATED"
+		local video = "stinger_eliminated"
+		Rule_AddOneShot(_gameOver_message, 
+			GAMEOVER_OBJECTIVE_TIME, {
+			_playerID = player_local, 
+			_icon = _conquest.icons.objective,
+			_endType = title,
+			_message = Loc_Empty(),
+			_sound = _conquest.sfx.defeat, 
+			_videoURI = video,
+			_callback = _Conquest_RevealUI
+		})
+	end	
+end

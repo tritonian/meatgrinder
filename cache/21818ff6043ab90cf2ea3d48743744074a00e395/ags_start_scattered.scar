@@ -13,7 +13,6 @@ AGS_SCATTERED_RADIUS = 1
 AGS_SCATTERED_TUNING = 1.9
 AGS_SCATTERED_WOOD = 0
 AGS_SCATTERED_STONE = 0
-VILLAGER_COUNT = 5
 
 ---------------------------------------------------------------------------------------------------
 -- Delegates:
@@ -83,41 +82,13 @@ function AGS_Scattered_CreateSpawn()
 		local sbp_vil = BP_GetSquadBlueprint(AGS_ENTITY_TABLE[player.raceName]["villager"])
 		local snameVIL = AGS_SGroupName(player.id, "villager")
 		local squad_group = SGroup_CreateIfNotFound(snameVIL)
-		
-		-- adjust villager count
-		local thisPlayersVilCount = VILLAGER_COUNT
-		
-		-- check if double starting vils is on
-		_mod.double_starting_vils = options_selected.other_options.double_vils
-		if _mod.double_starting_vils then
-			thisPlayersVilCount = VILLAGER_COUNT * 2
-		end
-		
-		-- race specific changes
-		if player.raceName == "hre_ha_01" then
-			if thisPlayersVilCount >= 10 then
-				thisPlayersVilCount = thisPlayersVilCount - 2
-			elseif thisPlayersVilCount >= 5 then
-				thisPlayersVilCount = thisPlayersVilCount - 1
-			end
-		elseif player.raceName == "french_ha_01" then
-			-- spawn a joan
-			local spawn_pos = AGS_Scattered_GetScatterPosition()
-			local sbp_joan =  BP_GetSquadBlueprint(AGS_ENTITY_TABLE[player.raceName]["jeanne"])
-			local snameJoan = AGS_SGroupName(player.id, AGS_ENTITY_TABLE[player.raceName]["jeanne"])
-			local squad_group_joan = SGroup_CreateIfNotFound(snameJoan)
-			UnitEntry_DeploySquads(player.id, squad_group_joan, {{sbp = sbp_joan, numSquads = 1 }}, spawn_pos)
-			-- reduce following count by 1
-			thisPlayersVilCount = thisPlayersVilCount - 1
-		end
-		
-		-- spawn vils
-		for i=1,thisPlayersVilCount do
+		--for i=1,AGS_GLOBAL_SETTINGS.StartingVillagers do	-- TODO: instead of 3 below, make it a setting and give OOTD 1 20%? less and joan 1 less	
+		for i=1,3 do
 			local spawn_pos = AGS_Scattered_GetScatterPosition()
 			UnitEntry_DeploySquads(player.id, squad_group, {{sbp = sbp_vil, numSquads = 1 }}, spawn_pos)
 		end		
 		
-		--Core_CallDelegateFunctions("UnitsSpawned", player.id, nil, squad_group)	-- probably don't need this		
+		Core_CallDelegateFunctions("UnitsSpawned", player.id, nil, squad_group)			
 	end
 end	
 

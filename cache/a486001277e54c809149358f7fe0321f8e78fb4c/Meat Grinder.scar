@@ -243,13 +243,12 @@ function MeatGrinder_OnInit()
 		import("winconditions/wonder.scar")	
 	end
 	
+	
 	-- just allow it to run all the time?
 	MeatGrinder_SetupObserverUI()
 end
 
 function MeatGrinder_Start()
-	
-	FOW_UnExploreAll()
 	
 	_mod.localPlayer = Core_GetPlayersTableEntry(Game_GetLocalPlayer())
 	

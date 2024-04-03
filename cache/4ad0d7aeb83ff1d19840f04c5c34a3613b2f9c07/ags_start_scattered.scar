@@ -13,7 +13,7 @@ AGS_SCATTERED_RADIUS = 1
 AGS_SCATTERED_TUNING = 1.9
 AGS_SCATTERED_WOOD = 0
 AGS_SCATTERED_STONE = 0
-VILLAGER_COUNT = 5
+VILLAGER_COUNT = 3
 
 ---------------------------------------------------------------------------------------------------
 -- Delegates:
@@ -40,6 +40,8 @@ function AGS_Scattered_OnInit()
 	-- Tune villager spawn out from the middle of the map.
 	AGS_SCATTERED_RADIUS = math.max(World_GetWidth(), World_GetLength())/AGS_SCATTERED_TUNING 
 	Camera_MoveTo(World_Pos(0,World_GetHeightAt(0,0),0))
+	
+	FOW_UnExploreAll()
 	
 	AGS_Scattered_CreateSpawn()
 end
