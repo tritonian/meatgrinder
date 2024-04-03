@@ -164,7 +164,7 @@ function Conquest_OnInit()
 						}
 						
 					end		
-				end
+			end
 				
 				-- For every Landmark found
 				EGroup_ForEach(eg_player_landmarks, _TrackLandmark)

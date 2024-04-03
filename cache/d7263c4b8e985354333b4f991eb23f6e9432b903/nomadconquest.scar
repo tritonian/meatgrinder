@@ -89,8 +89,13 @@ end
 
 -- Callback invoked by Core::OnInit()
 function Conquest_OnInit()
-
-	----- EDITED: Exit module if conquest not selected
+	
+	if not options_selected.other_options.nomad then
+		print("Unregistering nomad conquest")
+		Core_UnregisterModule(_conquest.module)
+		return
+	end
+	
 	if not options_selected.victory_options.conquest_victory then
 		print("Unregistering nomad conquest")
 		Core_UnregisterModule(_conquest.module)
@@ -119,57 +124,52 @@ function Conquest_OnInit()
 		-- later when it's checked they seem to check if landmarks have been built first
 		-- so should work as normal once a player builds a landmark
 		
-		-- CODE FOR NOMAD
-		if options_selected.other_options.nomad then
-			print("Nomad conquest, skipping initial landmark check.")
-			for _, player in pairs(PLAYERS) do
-				player.landmarks = {}
-			end
-		else
-			print("Normal conquest.")
-			-- BASIC CODE BELOW FOR VERSION WITHOUT NOMAD
-			-- For every player 
-			for _, player in pairs(PLAYERS) do
-				
-				-- Track Landmarks
-				player.landmarks = {}
-				
-				-- Get all player entities
-				local eg_player_landmarks = Player_GetAllEntities(player.id)
-				
-				-- Filter out all entities except for capital TC's and Landmarks
-				-- Capitals have type "landmark" and all other landmarks have the type _conquest.types.landmark, which equals "wonder"
-				-- at the time of writing.
-				local landmark_types = { "landmark", _conquest.types.landmark }
-				
-				-- This filters to entities that have ANY of landmark_types.
-				EGroup_Filter(eg_player_landmarks, landmark_types, FILTER_KEEP)
-				
-				local _TrackLandmark = function(gid, idx, eid)
-					
-					-- Get entity ID
-					local entity_id = Entity_GetID(eid)
-					
-					-- If entity is a Landmark or Capital
-					if (Conquest_IsALandmark(eid) or Conquest_IsACapital(eid)) and player.landmarks[entity_id] == nil  then
-						
-						-- Track entity IDs since Mongol structures trigger a GE_ConstructionComplete event when unpacked as well as when constructed.
-						player.landmarks[entity_id] = {
-							entity = eid,
-						 	last_health = Entity_GetHealth(eid),
-							damage_timer = string.format("conquest.landmark_damage_timer_%d", entity_id),
-							landmark_active = Entity_IsValid(entity_id) and Entity_GetStateModelBool(eid, "landmark_active"),
-							is_a_capital = Conquest_IsACapital(eid),
-							last_attacker = nil
-						}
-						
-					end		
-				end
-				
-				-- For every Landmark found
-				EGroup_ForEach(eg_player_landmarks, _TrackLandmark)
-			end		
+		print("Skipping initial landmark check.")
+		for _, player in pairs(PLAYERS) do
+			player.landmarks = {}
 		end
+		
+		-- For every player
+		--for _, player in pairs(PLAYERS) do
+			
+			---- Track Landmarks
+			--player.landmarks = {}
+			
+			---- Get all player entities
+			--local eg_player_landmarks = Player_GetAllEntities(player.id)
+			
+			---- Filter out all entities except for capital TC's and Landmarks
+			---- Capitals have type "landmark" and all other landmarks have the type _conquest.types.landmark, which equals "wonder"
+			---- at the time of writing.
+			--local landmark_types = { "landmark", _conquest.types.landmark }
+			
+			---- This filters to entities that have ANY of landmark_types.
+			--EGroup_Filter(eg_player_landmarks, landmark_types, FILTER_KEEP)
+			
+			--local _TrackLandmark = function(gid, idx, eid)
+				
+				---- Get entity ID
+				--local entity_id = Entity_GetID(eid)
+				
+				---- If entity is a Landmark or Capital
+				--if (Conquest_IsALandmark(eid) or Conquest_IsACapital(eid)) and player.landmarks[entity_id] == nil  then
+					
+					---- Track entity IDs since Mongol structures trigger a GE_ConstructionComplete event when unpacked as well as when constructed.
+					--player.landmarks[entity_id] = {
+						--entity = eid,
+					 	--last_health = Entity_GetHealth(eid),
+						--damage_timer = string.format("conquest.landmark_damage_timer_%d", entity_id),
+						--landmark_active = Entity_IsValid(entity_id) and Entity_GetStateModelBool(eid, "landmark_active"),
+						--is_a_capital = Conquest_IsACapital(eid),
+						--last_attacker = nil
+					--}
+					
+				--end		
+			--end
+			
+			---- For every Landmark found
+			----EGroup_ForEach(eg_player_landmarks, _TrackLandmark)
+		--end			
 		
 		--------------------------------------------------------------------
 		----------------------------------- END EDITED PORTION -------------

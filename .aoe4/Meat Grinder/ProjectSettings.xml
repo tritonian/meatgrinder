@@ -37,40 +37,6 @@
 						<d6p1:PrintActionEnabled>false</d6p1:PrintActionEnabled>
 					</d3p1:Settings>
 				</d3p1:BreakpointSettings>
-				<d3p1:BreakpointSettings>
-					<d3p1:Column>1</d3p1:Column>
-					<d3p1:FileName>FileName|Script|assets\scar\ags_start_scattered.scar</d3p1:FileName>
-					<d3p1:IsEnabled>true</d3p1:IsEnabled>
-					<d3p1:Line>99</d3p1:Line>
-					<d3p1:Settings xmlns:d6p1="http://schemas.datacontract.org/2004/07/Essence.Editor.ScriptEditor.Controls">
-						<d6p1:ConditionalExpression></d6p1:ConditionalExpression>
-						<d6p1:ConditionalExpressionEnabled>false</d6p1:ConditionalExpressionEnabled>
-						<d6p1:ConditionalExpressionOperator>IsTrue</d6p1:ConditionalExpressionOperator>
-						<d6p1:HitCount>0</d6p1:HitCount>
-						<d6p1:HitCountEnabled>false</d6p1:HitCountEnabled>
-						<d6p1:HitCountOperator>Equal</d6p1:HitCountOperator>
-						<d6p1:PrintAction></d6p1:PrintAction>
-						<d6p1:PrintActionConsequence>ContinueExecution</d6p1:PrintActionConsequence>
-						<d6p1:PrintActionEnabled>false</d6p1:PrintActionEnabled>
-					</d3p1:Settings>
-				</d3p1:BreakpointSettings>
-				<d3p1:BreakpointSettings>
-					<d3p1:Column>1</d3p1:Column>
-					<d3p1:FileName>FileName|Script|assets\scar\ags_start_scattered.scar</d3p1:FileName>
-					<d3p1:IsEnabled>true</d3p1:IsEnabled>
-					<d3p1:Line>102</d3p1:Line>
-					<d3p1:Settings xmlns:d6p1="http://schemas.datacontract.org/2004/07/Essence.Editor.ScriptEditor.Controls">
-						<d6p1:ConditionalExpression></d6p1:ConditionalExpression>
-						<d6p1:ConditionalExpressionEnabled>false</d6p1:ConditionalExpressionEnabled>
-						<d6p1:ConditionalExpressionOperator>IsTrue</d6p1:ConditionalExpressionOperator>
-						<d6p1:HitCount>0</d6p1:HitCount>
-						<d6p1:HitCountEnabled>false</d6p1:HitCountEnabled>
-						<d6p1:HitCountOperator>Equal</d6p1:HitCountOperator>
-						<d6p1:PrintAction></d6p1:PrintAction>
-						<d6p1:PrintActionConsequence>ContinueExecution</d6p1:PrintActionConsequence>
-						<d6p1:PrintActionEnabled>false</d6p1:PrintActionEnabled>
-					</d3p1:Settings>
-				</d3p1:BreakpointSettings>
 			</d3p1:BreakpointSettings>
 		</d2p1:anyType>
 	</PluginSettings>

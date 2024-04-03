@@ -41,6 +41,8 @@ function AGS_Scattered_OnInit()
 	AGS_SCATTERED_RADIUS = math.max(World_GetWidth(), World_GetLength())/AGS_SCATTERED_TUNING 
 	Camera_MoveTo(World_Pos(0,World_GetHeightAt(0,0),0))
 	
+	FOW_UnExploreAll()
+	
 	AGS_Scattered_CreateSpawn()
 end
 

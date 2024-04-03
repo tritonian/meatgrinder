@@ -41,8 +41,8 @@
 40,,,,,,None
 41,,,,,,Get Kills Or Be Eliminated
 42,,,,,,Generic objective description
-43,,,,,,The first player/team with the fewest kills will be eliminated in %1INITIALTIME% minutes.
-44,,,,,,The next player/team with the fewest kills will be eliminated in %1INCREMENTALTIME% minutes.
+43,,,,,,The first player or team with the fewest kills will be eliminated in %1INITIALTIME% minutes.
+44,,,,,,Next elimination in %1INCREMENTALTIME% minutes.
 45,,,,,,60 seconds to next elim!
 46,,,,,,Time to next elimination:
 47,,,,,,%1PLAYERNAME%
@@ -51,7 +51,7 @@
 50,,,,,,Eliminate All Tied Players
 51,,,,,,How point ties are handled. More options coming soon?
 52,,,,,,Points based on the resource cost of the unit/building killed. Landmarks worth zero. Should be adjusted based on civ bonuses. Joan worth buyback cost.
-53,,,,,,Doubles starting villagers - OOTD only gets 5 while others get 6
+53,,,,,,Doubles starting villagers - OOTD only gets 5 while others get 6. Works with Nomad.
 54,,,,,,Add Time If Surrender
 55,,,,,,Adds 2 minutes if someone leaves with less than 2 minutes remaining.
 56,,,,,,Punish Deletions
@@ -66,6 +66,6 @@
 65,,,,,,12
 66,,,,,,Can be good to knock out players who are dead anyway
 67,,,,,,Nomad
-68,,,,,,Nomad start - 4 villagers
+68,,,,,,"Nomad start - 5 villagers, 4 for OOTD.  Recommend adding an addition 4-5 minutes to first elimination timer. \n Might have some small bugs and still doesn't have spawning of IO, Prelate, etc."
 69,,,,,,13
 70,,,,,,14
